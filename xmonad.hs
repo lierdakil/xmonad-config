@@ -132,7 +132,7 @@ main = xmonad $ do
     lifxCommand = either (const . hPrint stderr) (fmap void . Lifx.command) lifxToken
 
     myXPConfig :: XPConfig
-    myXPConfig = amberXPConfig{ Pr.font="xft:Fira Mono:size=16"
+    myXPConfig = amberXPConfig{ Pr.font="xft:Fira Mono:pixelsize=24"
                               , position=Top
                               , height=32}
     myXPConfigTerm = myXPConfig {fgColor="green"}
