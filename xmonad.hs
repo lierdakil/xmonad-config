@@ -1,93 +1,45 @@
---
--- xmonad example config file.
---
--- A template showing all available configuration hooks,
--- and how to override the defaults in your own xmonad.hs conf file.
---
--- Normally, you'd only override those defaults you care about.
---
-{-# OPTIONS_GHC -fno-warn-unused-do-bind #-}
-{-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE LambdaCase       #-}
-{-# LANGUAGE TupleSections    #-}
-{-# LANGUAGE CPP    #-}
-{-# LANGUAGE DisambiguateRecordFields    #-}
 
 module Main where
 
-import           Control.Monad                      hiding ((>>))
-import           Data.List                          as L
-import qualified Data.Map                           as M
-import           Data.Monoid
-import           System.Exit
-import qualified XMonad                             as XM
-import           XMonad.Actions.CycleWS
-import           XMonad.Actions.FindEmptyWorkspace
-import qualified XMonad.Actions.FlexibleManipulate  as Flex
-import           XMonad.Actions.MouseGestures
-import           XMonad.Config.Prime.Monadic        hiding ((-->), (|||))
-import qualified XMonad.Config.Prime.Monadic        as C
-import           XMonad.Hooks.DynamicLog
-import           XMonad.Hooks.EwmhDesktops
-import           XMonad.Hooks.ManageDocks
-import           XMonad.Hooks.Minimize
-import           XMonad.Hooks.ServerMode
-import           XMonad.Layout.BinarySpacePartition
-import           XMonad.Layout.BorderResize
-import           XMonad.Layout.LayoutCombinators    ((|||))
-import qualified XMonad.Layout.LayoutCombinators    as LC
-import           XMonad.Layout.Minimize
-import           XMonad.Layout.MosaicAlt
-import           XMonad.Layout.NoBorders
-import           XMonad.Prompt as Pr
-import           XMonad.Prompt.Shell
-import           XMonad.Prompt.Window
-import           XMonad.Prompt.XMonad
-import qualified XMonad.StackSet                    as W
-import qualified XMonad.Util.ExtensibleState        as XS
-
-import           Local.DockWindows
-import qualified Local.Lifx                         as Lifx
-
-
--- import qualified Prelude                            as P
-import           XMonad.Actions.Navigation2D
-import           XMonad.Hooks.UrgencyHook
--- import XMonad.Actions.SwapWorkspaces
-import           System.IO
-import           XMonad.Actions.WorkspaceNames
-import           XMonad.Util.Run
-import           XMonad.Layout.Fullscreen (fullscreenSupport)
-import           XMonad.Layout.Renamed
-import XMonad.Util.WorkspaceCompare
--- import XMonad.Hooks.SetWMName
-import System.Environment
-import Data.Maybe
-import XMonad.Util.Loggers
-import System.Process.Internals (translate)
-import XMonad.Util.NamedWindows
-import XMonad.Util.Dzen as DZ
+import Control.Monad
+import System.IO
 import Control.Exception
 import Control.Concurrent
-import Data.IORef
-import Control.Arrow
+import System.Exit
+import qualified Data.Map as M
 
-newtype MyUrgencyHook = MyUrgencyHook { popup :: String -> X () }
+import qualified XMonad as XM
+import qualified XMonad.StackSet as W
+import XMonad.Actions.FindEmptyWorkspace
+import XMonad.Actions.MouseGestures
+import qualified XMonad.Actions.FlexibleManipulate as Flex
+import XMonad.Actions.Navigation2D
+import XMonad.Actions.WorkspaceNames
+import XMonad.Hooks.EwmhDesktops
+import XMonad.Hooks.ManageDocks
+import XMonad.Hooks.Minimize
+import XMonad.Layout.BinarySpacePartition
+import XMonad.Layout.BorderResize
+import XMonad.Layout.LayoutCombinators ((|||))
+import qualified XMonad.Layout.LayoutCombinators as LC
+import XMonad.Layout.Minimize
+import XMonad.Layout.MosaicAlt
+import XMonad.Layout.NoBorders
+import XMonad.Layout.Fullscreen (fullscreenSupport)
+import XMonad.Layout.Renamed
+import XMonad.Prompt
+import XMonad.Prompt.Shell
+import XMonad.Prompt.Window
+import XMonad.Prompt.XMonad
 
-instance UrgencyHook MyUrgencyHook where
-  urgencyHook MyUrgencyHook { popup = pop } w =
-      withWindowSet . (. W.findTag w) . flip whenJust . flash =<< getName w
-    where
-      flash name index =
-        pop (show name ++ " requests your attention on workspace " ++ index)
+import XMonad.Config.Prime.Monadic hiding ((|||))
 
-------------------------------------------------------------------------
--- Now run xmonad with all the defaults we set up.
-
--- Run xmonad with the settings you specify. No need to modify this.
-
---
---import Prelude
+import Local.Lifx
+import Local.Util
+import Local.DockWindows
+import Local.Popup
+import Local.Xmobar
 
 main :: IO ()
 main = xmonad $ do
@@ -112,9 +64,6 @@ main = xmonad $ do
     wsActions =+ [("S-M1-", windows . W.shift)]
     -- wsSetName 1 "mail"
 
-  let hiddenWorkspaceTag = "Hidden"
-      filterHidden = filter $ (/= hiddenWorkspaceTag) . W.tag
-
   workspaces =+ [hiddenWorkspaceTag]
   "M-<Backspace>" ~~ windows . W.greedyView $ hiddenWorkspaceTag
   "M-S-<Backspace>" ~~ windows . W.shift $ hiddenWorkspaceTag
@@ -125,18 +74,19 @@ main = xmonad $ do
   lifxToken <- io $ try (read <$> readFile ".lifxToken")
   let
     layout' f = withWindowSet $ f . description . W.layout . W.workspace . W.current
-    lifxPower :: Lifx.PowerState -> X ()
-    lifxPower s = lifxCommand $ Lifx.group "Room" . Lifx.powerState s
+    lifxPower :: PowerState -> X ()
+    lifxPower s = lifxCommand $ group "Room" . powerState s
     lifxBrightness :: Float -> X ()
-    lifxBrightness v = lifxCommand $ Lifx.group "Room" . Lifx.brightness v
-    lifxCommand :: Lifx.Lifx a => (Lifx.LifxCommand a -> Lifx.LifxCommand a) -> X ()
-    lifxCommand c
-      | Right tok <- lifxToken = io $ void . forkIO . void $ Lifx.command tok c
-      | Left err <- lifxToken = io $ hPrint stderr (err :: SomeException)
+    lifxBrightness v = lifxCommand $ group "Room" . brightness v
+    lifxCommand :: Lifx a => (LifxCommand a -> LifxCommand a) -> X ()
+    lifxCommand c = io $
+      case lifxToken of
+        Right tok -> void . forkIO . void $ command tok c
+        Left err -> hPrint stderr (err :: SomeException)
 
 
     myXPConfig :: XPConfig
-    myXPConfig = amberXPConfig{ Pr.font="xft:Fira Mono:pixelsize=24"
+    myXPConfig = amberXPConfig{ font="xft:Fira Mono:pixelsize=24"
                               , position=Top
                               , height=32}
     myXPConfigTerm = myXPConfig {fgColor="green"}
@@ -149,13 +99,13 @@ main = xmonad $ do
   --     | (i,k) <- zip [1..12] [xK_F1..xK_F12] ]
   -- ++
 
-  "M-S-<Return>" ~~ spawn =<< asks $ XM.terminal . XM.config
+  "M-S-<Return>" ~~ spawn =<< asks (XM.terminal . XM.config)
 
   -- launch program
   "M-p" ~~ shellPrompt myXPConfig
 
   -- launch in terminal
-  "M-S-p" ~~ flip prompt myXPConfigTerm . (++ " -e") =<< asks $ XM.terminal . XM.config
+  "M-S-p" ~~ flip prompt myXPConfigTerm . (++ " -e") =<< asks (XM.terminal . XM.config)
 
   -- close focused window
   "M1-S-c" ~~ kill
@@ -250,8 +200,8 @@ main = xmonad $ do
   "M3-r"                     ~~ spawn "/home/livid/bin/mklink.sh"
   "M3-s"                     ~~ spawn "/home/livid/bin/screencast"
   "M3-l"                     ~~ spawn "/home/livid/bin/mlock"
-  "M3-<F11>"                 ~~ lifxPower Lifx.Off
-  "M3-<F12>"                 ~~ lifxPower Lifx.On
+  "M3-<F11>"                 ~~ lifxPower Off
+  "M3-<F12>"                 ~~ lifxPower On
   "M3-m"                     ~~ spawn "gajim-remote show_next_pending_event"
   "M3-<F6>"                  ~~ spawn "toggle-touchpad"
   "<Print>"                  ~~ spawn "screenshot"
@@ -315,8 +265,8 @@ main = xmonad $ do
         ]
 
   -- hooks, layouts
-  resetLayout $ emptyBSP LC.||| Full
-  modifyLayout Prelude.$ squash $ renamed [CutWordsLeft 1] . minimize . borderResize . smartBorders . avoidStruts
+  resetLayout $ emptyBSP ||| Full
+  modifyLayout $ squash $ renamed [CutWordsLeft 1] . minimize . borderResize . smartBorders . avoidStruts
   let
     floats =
       [ "baka-mplayer"
@@ -324,111 +274,26 @@ main = xmonad $ do
       , "Screengrab"
       , "Display"
       ]
-    docks =
-      [ "Cairo-dock"
-      , "Avant-window-navigator"
-      ]
     ignored =
       [ "desktop_window"
       , "kdesktop"
       , "cairo-dock"
       ]
-    anyQ f = foldr1 (<||>) . map f
-    isFloat = anyQ (className =?) floats
-    isDock  = anyQ (className =?) docks
-    isIgnored = anyQ (resource =?) ignored
   manageHook =+
     composeAll
-      [ isFloat   --> doFloat
-      , isIgnored --> doIgnore
+      [ isClass floats     --> doFloat
+      , isResource ignored --> doIgnore
       ]
-  manageHook =+
-      checkDock <&&> isDock -->
-        do
-          win <- ask
-          _ <- liftX $ XS.modify $ DockWindows . (win :) . unDockWindows
-          doIgnore
   manageHook =+ manageDocks
 
-
-  handleEventHook =:
-    \case
-      MapNotifyEvent{} -> do
-        d <- asks display
-        DockWindows windows' <- XS.get
-        mapM_ (io . raiseWindow d) windows'
-        >> return (All True)
-      DestroyWindowEvent{ev_window=win} ->
-        XS.modify (DockWindows . (\\ [win]) . unDockWindows)
-        >> return (All True)
-      _ -> return (All True)
-  let mkWsSort' :: X WorkspaceCompare -> X WorkspaceSort
-      mkWsSort' cmpX = do
-        cmp <- cmpX
-        return $ sortBy (\a b -> cmp (W.tag a) (W.tag b)) . filterHidden
-      getSortByIndex' :: X WorkspaceSort
-      getSortByIndex' = mkWsSort' getWsCompare
-  handleEventHook =+ serverModeEventHookCmd' $
-    flip fmap (asks $ XM.workspaces . XM.config) $
-      \wss ->
-        ("next-layout",sendMessage NextLayout):
-        ("next-ws", doTo Next NonEmptyWS getSortByIndex' (windows . W.greedyView)):
-        ("prev-ws", doTo Prev NonEmptyWS getSortByIndex' (windows . W.greedyView)):
-        ("show-title", withNamedWindow $ popup . show):
-        [("view" ++ i, windows $ W.view i) | i <- wss]
   handleEventHook =+ fullscreenEventHook
   handleEventHook =+ minimizeEventHook
-  handleEventHook =+ serverModeEventHookF "XMONAD_POPUP" popup
-  -- handleEventHook =+ timerEventHook
 
-  apply $ withUrgencyHook $ MyUrgencyHook popup
-  -- apply $ withUrgencyHook NoUrgencyHook
   apply ewmh
   apply' fullscreenSupport
 
   -- startupHook =+ setWMName "LG3D"
 
-  logHook =+
-    let
-      myPP    = xmobarPP {
-            ppCurrent = scrollableWs . xmobarColor "white" "#2b4f98" . pad . xmobarEscape
-          , ppVisible = scrollableWs . xmobarColor "black" "#999999" . pad . clickableWs
-          , ppUrgent  = scrollableWs . xmobarColor "red" "yellow" . pad . clickableWs
-          , ppHidden  = scrollableWs . xmobarColor "black" "#cccccc" . pad . clickableWs
-          , ppLayout =
-              doClientCommand 1 "next-layout" . xmobarColor "black" "#cccccc" . pad
-          , ppSort = fmap (. filterHidden) (ppSort xmobarPP)
-          , ppWsSep    = ""
-          , ppSep      = ""
-          , ppTitle    = xmobarColor "#999999" "#324c80" . pad . showTitle . xmobarEscape
-      }
-      xmobarEscape [] = []
-      xmobarEscape s = "<raw="++len++":"++s++"/>"
-        where len = show $ length s
-      -- Wraps a workspace name with a dzen clickable action that focusses that workspace
-      showTitle = doClientCommand 1 "show-title"
-      scrollableWs =
-            doClientCommand 4 "prev-ws"
-          . doClientCommand 5 "next-ws"
-      clickableWs ws =
-        doClientCommand 1 ("view"++takeWhile (/=':') ws) $ xmobarEscape ws
-      doClientCommand :: Int -> String -> String -> String
-      doClientCommand btn command =
-        wrap ("<action=`"++cmdClient++" "++command++"` button="++show btn++">") "</action>"
-          where
-              cmdClient = "xmonadctl"
-    in workspaceNamesPP myPP >>= dynamicLogString >>= xmonadPropLog
-
-  where
-    infixr 2 $
-    ($) = (Prelude.$)
-    infix 2 -->
-    (-->) = (C.-->)
-    infixr 0 ~~
-    x ~~ y = keys =+ [(x, y)]
-
-    popup :: String -> X ()
-    popup = dzenConfig popupConfig
-      where
-        popupConfig = onCurr (vCenter 22) >=> timeout 2 >=> background "darkgreen" >=> DZ.font "xft:Fira Mono:pixelsize=18"
-        background color = addArgs ["-bg", color]
+  keepDocksAbove
+  xmobarConfig
+  popupConfig

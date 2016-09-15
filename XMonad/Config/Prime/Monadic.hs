@@ -132,7 +132,7 @@ Dict(Dict),
 
 -- base
 import           Control.Arrow                          (first, second)
-import           Control.Applicative                    ((<$>))
+-- import           Control.Applicative                    ((<$>))
 import           Control.Monad.State
 import           Data.Monoid                            (All)
 import           Prelude                                hiding (mod)
@@ -449,7 +449,7 @@ clickJustFocuses = Settable X.clickJustFocuses (\x c -> c { X.clickJustFocuses =
 class SummableClass s y | s -> y where
   -- | This lets you add to an attribute.
   (=+) :: s c -> y -> Arr c
-  infix 0 =+
+  infixr 0 =+
 
 data Summable x y c = Summable (c -> x)      -- getter
                                (x -> c -> c) -- setter
@@ -544,7 +544,7 @@ rootMask = Summable X.rootMask (\x c -> c { X.rootMask = x }) (.|.)
 class RemovableClass r y | r -> y where
   -- | This lets you remove from an attribute.
   (=-) :: r c -> y -> Arr c
-  infix 0 =-
+  infixr 0 =-
 
 data Keys c = Keys { kAdd    :: [(String, X ())] -> c -> c,
                      kRemove :: [String] -> c -> c }
