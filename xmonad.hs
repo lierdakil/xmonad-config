@@ -53,10 +53,41 @@ main = xmonad $ do
   focusedBorderColor =: "#ff00fe"
   borderWidth        =: 1
 
-  --
-  -- mod-[1..9], Switch to workspace N
-  -- mod-shift-[1..9], Move client to workspace N
-  --
+  -- hooks, layouts
+  resetLayout $ emptyBSP ||| Full
+  modifyLayout $ squash $ renamed [CutWordsLeft 1] . minimize . borderResize . smartBorders . avoidStruts
+  let
+    floats =
+      [ "baka-mplayer"
+      , "Gajim"
+      , "Screengrab"
+      , "Display"
+      ]
+    ignored =
+      [ "desktop_window"
+      , "kdesktop"
+      , "cairo-dock"
+      ]
+  manageHook =+
+    composeAll
+      [ isClass floats     --> doFloat
+      , isResource ignored --> doIgnore
+      ]
+  manageHook =+ manageDocks
+
+  handleEventHook =+ fullscreenEventHook
+  handleEventHook =+ minimizeEventHook
+
+  apply ewmh
+  apply' fullscreenSupport
+
+  -- startupHook =+ setWMName "LG3D"
+
+  keepDocksAbove
+  xmobarConfig
+  popupConfig
+
+  -- workspaces
   withWorkspaces $ do
     wsKeys =: map show [1..9 :: Int]
     wsActions =+ [("M1-", windows . W.greedyView)]
@@ -187,19 +218,19 @@ main = xmonad $ do
   -- utility bindings ported from xbindkeysrc
   -- mod3Mask = R_CTRL, see xmodmap
   "<XF86Sleep>"              ~~ spawn "loginctl lock-session $XDG_SESSION_ID"
-  "<XF86AudioLowerVolume>"   ~~ spawn "/home/livid/bin/pavol -2000"
-  "<XF86AudioRaiseVolume>"   ~~ spawn "/home/livid/bin/pavol +2000"
-  "<Pause>"                  ~~ spawn "/home/livid/bin/apod.sh"
-  "M-<XF86AudioMute>"        ~~ spawn "/home/livid/bin/pamoveallto"
-  "<XF86AudioMute>"          ~~ spawn "/home/livid/bin/pavol mute"
+  "<XF86AudioLowerVolume>"   ~~ spawn "pavol -2000"
+  "<XF86AudioRaiseVolume>"   ~~ spawn "pavol +2000"
+  "<Pause>"                  ~~ spawn "apod.sh"
+  "M-<XF86AudioMute>"        ~~ spawn "pamoveallto"
+  "<XF86AudioMute>"          ~~ spawn "pavol mute"
   "<XF86AudioNext>"          ~~ spawn "mpc next"
   "<XF86AudioPrev>"          ~~ spawn "mpc prev"
   "<XF86AudioStop>"          ~~ spawn "mpc stop"
   "<XF86AudioPlay>"          ~~ spawn "mpc toggle"
   "M1-<F3>"                  ~~ spawn "xkill"
-  "M3-r"                     ~~ spawn "/home/livid/bin/mklink.sh"
-  "M3-s"                     ~~ spawn "/home/livid/bin/screencast"
-  "M3-l"                     ~~ spawn "/home/livid/bin/mlock"
+  "M3-r"                     ~~ spawn "mklink.sh"
+  "M3-s"                     ~~ spawn "screencast"
+  "M3-l"                     ~~ spawn "mlock"
   "M3-<F11>"                 ~~ lifxPower Off
   "M3-<F12>"                 ~~ lifxPower On
   "M3-m"                     ~~ spawn "gajim-remote show_next_pending_event"
@@ -213,7 +244,7 @@ main = xmonad $ do
   -- "<XF86Launch5>"            ~~ spawn "true"
   -- "<XF86Launch6>"            ~~ spawn "true"
   -- "<XF86Launch7>"            ~~ spawn "true"
-  "<XF86Launch8>"            ~~ spawn "/home/livid/bin/pamoveallto"
+  "<XF86Launch8>"            ~~ spawn "pamoveallto"
 
   "C-<KP_Left>"      ~~ sendMessage (ExpandTowards L)
   "C-<KP_Right>"     ~~ sendMessage (ExpandTowards R)
@@ -258,42 +289,7 @@ main = xmonad $ do
         , ([D, R], (>> kill) . focus)
       ]
 
-
   mouseBindings =+
         [ ((0, 9), mouseGesture gestures)
         , ((0, 8), \w -> focus w >> Flex.mouseWindow Flex.discrete w)
         ]
-
-  -- hooks, layouts
-  resetLayout $ emptyBSP ||| Full
-  modifyLayout $ squash $ renamed [CutWordsLeft 1] . minimize . borderResize . smartBorders . avoidStruts
-  let
-    floats =
-      [ "baka-mplayer"
-      , "Gajim"
-      , "Screengrab"
-      , "Display"
-      ]
-    ignored =
-      [ "desktop_window"
-      , "kdesktop"
-      , "cairo-dock"
-      ]
-  manageHook =+
-    composeAll
-      [ isClass floats     --> doFloat
-      , isResource ignored --> doIgnore
-      ]
-  manageHook =+ manageDocks
-
-  handleEventHook =+ fullscreenEventHook
-  handleEventHook =+ minimizeEventHook
-
-  apply ewmh
-  apply' fullscreenSupport
-
-  -- startupHook =+ setWMName "LG3D"
-
-  keepDocksAbove
-  xmobarConfig
-  popupConfig
