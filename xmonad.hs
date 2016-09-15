@@ -68,6 +68,9 @@ import System.Process.Internals (translate)
 import XMonad.Util.NamedWindows
 import XMonad.Util.Dzen as DZ
 import Control.Exception
+import Control.Concurrent
+import Data.IORef
+import Control.Arrow
 
 newtype MyUrgencyHook = MyUrgencyHook { popup :: String -> X () }
 
@@ -119,17 +122,29 @@ main = xmonad $ do
   -- M = M4 = RALT
   -- M1 = LALT
   -- M3 = RCTL
-  lifxToken <- io $ (try :: IO String -> IO (Either SomeException String)) $ read <$> readFile ".lifxToken"
+  lifxTokenVar <- io $ newIORef $ Left ""
   let
     layout' f = withWindowSet $ f . description . W.layout . W.workspace . W.current
     lifxPower :: Lifx.PowerState -> X ()
-    lifxPower s = io $
-      lifxCommand $ Lifx.group "Room" . Lifx.powerState s
+    lifxPower s = lifxCommand $ Lifx.group "Room" . Lifx.powerState s
     lifxBrightness :: Float -> X ()
-    lifxBrightness v = io $
-      lifxCommand $ Lifx.group "Room" . Lifx.brightness v
-    lifxCommand :: Lifx.Lifx a => (Lifx.LifxCommand a -> Lifx.LifxCommand a) -> IO ()
-    lifxCommand = either (const . hPrint stderr) (fmap void . Lifx.command) lifxToken
+    lifxBrightness v = lifxCommand $ Lifx.group "Room" . Lifx.brightness v
+    lifxCommand :: Lifx.Lifx a => (Lifx.LifxCommand a -> Lifx.LifxCommand a) -> X ()
+    lifxCommand c = io Prelude.$
+      lifxToken >>=
+        \case
+          Left err -> hPutStrLn stderr err
+          Right tok' ->
+            void . forkIO . void $ Lifx.command tok' c
+    lifxToken :: IO (Either String String)
+    lifxToken =
+      readIORef lifxTokenVar >>=
+        \case
+          Left _ -> do
+            res <- (left (show :: SomeException -> String) . right read) <$> try (readFile ".lifxToken")
+            writeIORef lifxTokenVar res
+            return res
+          x -> return x
 
     myXPConfig :: XPConfig
     myXPConfig = amberXPConfig{ Pr.font="xft:Fira Mono:pixelsize=24"
@@ -311,7 +326,7 @@ main = xmonad $ do
         ]
 
   -- hooks, layouts
-  resetLayout $ emptyBSP ||| Full
+  resetLayout $ emptyBSP LC.||| Full
   modifyLayout Prelude.$ squash $ renamed [CutWordsLeft 1] . minimize . borderResize . smartBorders . avoidStruts
   let
     floats =
