@@ -171,6 +171,7 @@ main = xmonad $ do
 
   -- Push window back into tiling
   "M-t" ~~ withFocused (windows . W.sink)
+  "M-S-t" ~~ withFocused XM.float
 
   -- layout-dependent keys
   -- Shrink the master area
