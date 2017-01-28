@@ -234,8 +234,8 @@ main = xmonad $ do
   "M3-l"                     ~~ spawn "mlock"
   "M3-<F11>"                 ~~ lifxPower Off
   "M3-<F12>"                 ~~ lifxPower On
-  "M3-m"                     ~~ spawn "hexchat -e -c 'gui show'"
-  "M3-S-m"                   ~~ spawn "hexchat -e -c 'gui hide'"
+  "M3-/"                     ~~ spawn "hexchat -e -c 'gui show'"
+  "M3-S-/"                   ~~ spawn "hexchat -e -c 'gui hide'"
   "M3-<F6>"                  ~~ spawn "toggle-touchpad"
   "<Print>"                  ~~ spawn "screenshot"
 
