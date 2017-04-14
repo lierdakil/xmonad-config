@@ -21,9 +21,12 @@ import XMonad.Hooks.ManageDocks
 import XMonad.Hooks.Minimize
 import XMonad.Layout.BinarySpacePartition
 import XMonad.Layout.BorderResize
+import XMonad.Actions.MouseResize
 import XMonad.Layout.LayoutCombinators ((|||))
 import qualified XMonad.Layout.LayoutCombinators as LC
 import XMonad.Layout.Minimize
+import XMonad.Actions.GridSelect
+import XMonad.Layout.LayoutHints
 import XMonad.Layout.MosaicAlt
 import XMonad.Layout.NoBorders
 import XMonad.Layout.Fullscreen (fullscreenSupport)
@@ -55,7 +58,7 @@ main = xmonad $ do
 
   -- hooks, layouts
   resetLayout $ emptyBSP ||| Full
-  modifyLayout $ squash $ renamed [CutWordsLeft 1] . minimize . borderResize . smartBorders . avoidStruts
+  modifyLayout $ squash $ renamed [CutWordsLeft 1] . minimize . mouseResize . borderResize . smartBorders . avoidStruts . layoutHintsToCenter
   let
     floats =
       [ "baka-mplayer"
@@ -293,7 +296,8 @@ main = xmonad $ do
       ]
 
   mouseBindings =+
-        [ ((0, 9), mouseGesture gestures)
+        [ ((0, 8), const $ goToSelected def)
+        , ((0, 9), mouseGesture gestures)
         , ((controlMask .|. shiftMask, 1), \w -> focus w >> asks display >>= io . flip raiseWindow w >> Flex.mouseWindow Flex.discrete w)
         , ((0, 10), return $ spawn "toggle-scroll-emulation")
         , ((0, 11), windows . W.sink)
