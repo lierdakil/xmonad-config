@@ -1,23 +1,12 @@
 {-# LANGUAGE ConstraintKinds           #-}
-{-# LANGUAGE ExistentialQuantification #-}
 {-# LANGUAGE FlexibleContexts          #-}
 {-# LANGUAGE FlexibleInstances         #-}
 {-# LANGUAGE FunctionalDependencies    #-}
 {-# LANGUAGE ImpredicativeTypes        #-}
 {-# LANGUAGE KindSignatures            #-}
-{-# LANGUAGE LiberalTypeSynonyms       #-}
-{-# LANGUAGE MultiParamTypeClasses     #-}
-{-# LANGUAGE Rank2Types                #-}
-{-# LANGUAGE TypeFamilies              #-}
 {-# LANGUAGE TypeOperators             #-}
-{-# LANGUAGE TypeSynonymInstances      #-}
 {-# LANGUAGE UndecidableInstances      #-}
 {-# LANGUAGE GADTs                     #-}
-{-# LANGUAGE CPP                       #-}
-{-# LANGUAGE ScopedTypeVariables       #-}
-#if __GLASGOW_HASKELL__ >= 707
-{-# LANGUAGE RoleAnnotations           #-}
-#endif
 -----------------------------------------------------------------------------
 -- |
 -- Module      :  XMonad.Config.Prime
@@ -169,8 +158,7 @@ import qualified XMonad.Layout.Combo                    (CombineTwo)
 import qualified XMonad.Layout.ComboP                   (CombineTwoP)
 import qualified XMonad.Layout.Groups                   (WithID)
 import qualified XMonad.Layout.IfMax                    (IfMax)
-import qualified XMonad.Layout.LayoutBuilder            (LayoutN)
-import qualified XMonad.Layout.LayoutBuilderP           (LayoutP, Predicate)
+import qualified XMonad.Layout.LayoutBuilder            (LayoutB, Predicate)
 import qualified XMonad.Layout.LayoutCombinators        (NewSelect)
 import qualified XMonad.Layout.MessageControl           (Ignore)
 import qualified XMonad.Layout.MultiToggle              (HList, MultiToggle)
@@ -321,6 +309,17 @@ instance (CC m1 a, CC m2 a) => CC (m1 :. m2) a where
 --- Modifier instances
 ---
 
+newtype LayoutB p l1 l2 a = LayoutB {unLayoutB :: XMonad.Layout.LayoutBuilder.LayoutB l1 l2 p a } deriving (Read, Show)
+
+instance ( Show a, Read a, Eq a, Typeable a
+         , XMonad.Layout.LayoutBuilder.Predicate p a, Show p
+         , IsLayout l1 a, IsLayout l2 a) => LayoutClass (LayoutB p l1 l2) a where
+  runLayout ws@W.Workspace{W.layout = lay} =
+    (second (LayoutB <$>) <$>) . runLayout (ws{W.layout = unLayoutB lay})
+  handleMessage lay =
+    fmap (fmap LayoutB) . handleMessage (unLayoutB lay)
+  description = description . unLayoutB
+
 instance CC Mirror a where dict _ = Dict
 instance IsLayout l a => CC (Choose l) a where dict _ = Dict
 instance (IsLayout l a) => CC (XMonad.Layout.ToggleLayouts.ToggleLayouts l) a where dict _ = Dict
@@ -330,8 +329,10 @@ instance (IsLayout l a, Show a) => CC (XMonad.Layout.OnHost.OnHost l) a where di
 instance (Read b, Show b, Typeable a, XMonad.Layout.MultiToggle.HList b a) => CC (XMonad.Layout.MultiToggle.MultiToggle b) a where dict _ = Dict
 instance (Message m) => CC (XMonad.Layout.MessageControl.Ignore m) a where dict _ = Dict
 instance (IsLayout l a) => CC (XMonad.Layout.LayoutCombinators.NewSelect l) a where dict _ = Dict
--- instance (IsLayout l a, Show a, Eq a, Read b, Read a, Show b, Typeable a, XMonad.Layout.LayoutBuilderP.Predicate b a) => CC (XMonad.Layout.LayoutBuilderP.LayoutP b l) a where dict _ = Dict
--- instance (Eq a, Read a, Show a, Typeable a, IsLayout l a) => CC (XMonad.Layout.LayoutBuilder.LayoutN l) a where dict _ = Dict
+instance ( Eq a, Read a, Show a
+         , Typeable a, IsLayout l a
+         , Read p, Show p, XMonad.Layout.LayoutBuilder.Predicate p a
+         ) => CC (LayoutB p l) a where dict _ = Dict
 instance (IsLayout l Window) => CC (XMonad.Layout.IfMax.IfMax l) Window where dict _ = Dict
 instance (IsLayout l (), IsLayout l1 Window)
       => CC (XMonad.Layout.ComboP.CombineTwoP (l ()) l1) Window where dict _ = Dict
@@ -933,9 +934,3 @@ r \\ Sub Dict = r
 
 trans :: (b :- c) -> (a :- b) -> a :- c
 trans f g = Sub $ Dict \\ f \\ g
-
-
-#if __GLASGOW_HASKELL__ >= 707
-type role Dict nominal
-type role (:-) nominal nominal
-#endif
