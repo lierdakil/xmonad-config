@@ -14,6 +14,7 @@
 {-# LANGUAGE UndecidableInstances      #-}
 {-# LANGUAGE GADTs                     #-}
 {-# LANGUAGE CPP                       #-}
+{-# LANGUAGE ScopedTypeVariables       #-}
 #if __GLASGOW_HASKELL__ >= 707
 {-# LANGUAGE RoleAnnotations           #-}
 #endif
@@ -47,6 +48,7 @@ module XMonad.Config.Prime.Monadic (
 -- * Start here
 -- $start_here
 xmonad,
+launch,
 nothing,
 -- * Attributes you can set
 -- $settables
@@ -141,10 +143,10 @@ import           Prelude                                hiding (mod)
 
 import           XMonad                                 hiding (XConfig (..),
                                                          get, modify, put,
-                                                         xmonad)
+                                                         xmonad, launch)
 import           XMonad                                 (XConfig (XConfig))
 import qualified XMonad                                 as X (XConfig (..),
-                                                              xmonad)
+                                                              xmonad, launch)
 import qualified XMonad.StackSet                        as W
 
 -- xmonad-contrib
@@ -159,7 +161,7 @@ import           XMonad.Util.EZConfig                   (additionalKeysP,
 
 -- copied from Data.Constraint
 
-import GHC.Prim (Constraint)
+import GHC.Exts (Constraint)
 
 --- imports for CC instances
 
@@ -328,9 +330,9 @@ instance (IsLayout l a, Show a) => CC (XMonad.Layout.OnHost.OnHost l) a where di
 instance (Read b, Show b, Typeable a, XMonad.Layout.MultiToggle.HList b a) => CC (XMonad.Layout.MultiToggle.MultiToggle b) a where dict _ = Dict
 instance (Message m) => CC (XMonad.Layout.MessageControl.Ignore m) a where dict _ = Dict
 instance (IsLayout l a) => CC (XMonad.Layout.LayoutCombinators.NewSelect l) a where dict _ = Dict
-instance (IsLayout l a, Show a, Eq a, Read b, Read a, Show b, Typeable a, XMonad.Layout.LayoutBuilderP.Predicate b a) => CC (XMonad.Layout.LayoutBuilderP.LayoutP b l) a where dict _ = Dict
-instance (Eq a, Read a, Show a, Typeable a, IsLayout l a) => CC (XMonad.Layout.LayoutBuilder.LayoutN l) a where dict _ = Dict
-instance (IsLayout l a) => CC (XMonad.Layout.IfMax.IfMax l) a where dict _ = Dict
+-- instance (IsLayout l a, Show a, Eq a, Read b, Read a, Show b, Typeable a, XMonad.Layout.LayoutBuilderP.Predicate b a) => CC (XMonad.Layout.LayoutBuilderP.LayoutP b l) a where dict _ = Dict
+-- instance (Eq a, Read a, Show a, Typeable a, IsLayout l a) => CC (XMonad.Layout.LayoutBuilder.LayoutN l) a where dict _ = Dict
+instance (IsLayout l Window) => CC (XMonad.Layout.IfMax.IfMax l) Window where dict _ = Dict
 instance (IsLayout l (), IsLayout l1 Window)
       => CC (XMonad.Layout.ComboP.CombineTwoP (l ()) l1) Window where dict _ = Dict
 instance (IsLayout l (), IsLayout l1 a, Read a, Show a, Eq a, Typeable a)
@@ -373,6 +375,11 @@ xmonad :: Prime -> IO ()
 xmonad prime = xmonad' =<< execStateT prime (exc def)
   where xmonad' :: XConfig Layout -> IO ()
         xmonad' cf@XConfig{ X.layoutHook = Layout l } = X.xmonad cf{ X.layoutHook = l }
+
+launch :: Prime -> IO ()
+launch prime = launch' =<< execStateT prime (exc def)
+  where launch' :: XConfig Layout -> IO ()
+        launch' cf@XConfig{ X.layoutHook = Layout l } = X.launch cf{ X.layoutHook = l }
 
 -- | This doesn't modify the config in any way. It's just here for your initial
 -- config because Haskell doesn't allow empty do-blocks. Feel free to delete it
@@ -831,7 +838,7 @@ apply = modify
 --
 -- > apply' $ squashXC myFunction
 apply' :: (CC m Window) => (forall l. (LayoutClass l Window) => XConfig l -> XConfig (m l)) -> Prime
-apply' = apply . wrapXC
+apply' x = apply $ wrapXC x
 
 -- | Turns an IO function on 'XConfig' into a 'Prime.
 applyIO :: (XConfig Layout -> IO (XConfig Layout)) -> Prime

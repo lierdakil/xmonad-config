@@ -1,3 +1,8 @@
 .stack-work
 xmonad.errors
 history
+prompt-history
+xmonad-config
+xmonad-*-linux
+xmonad.state
+xmonadctl

@@ -67,19 +67,20 @@ main = xmonad $ do
       [ "desktop_window"
       , "kdesktop"
       , "cairo-dock"
+      , "trayer"
       ]
   manageHook =+
     composeAll
       [ isClass floats     --> doFloat
       , isResource ignored --> doIgnore
       ]
-  manageHook =+ manageDocks
 
-  -- handleEventHook =+ fullscreenEventHook
+  handleEventHook =+ fullscreenEventHook
   handleEventHook =+ minimizeEventHook
 
   apply ewmh
-  -- apply' fullscreenSupport
+  apply docks
+  apply' fullscreenSupport
 
   -- startupHook =+ setWMName "LG3D"
 
@@ -204,7 +205,7 @@ main = xmonad $ do
   "M-S-q" ~~ io exitSuccess
 
   -- Restart xmonad
-  "M-q" ~~ spawn "cd ~/.xmonad && stack install && cd ~ && xmonad --restart"
+  "M-q" ~~ spawn "xmonad --recompile; xmonad --restart"
 
   --mosaic
   --, ((modm, xK_a), sendMessage Taller)

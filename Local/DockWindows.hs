@@ -38,8 +38,8 @@ keepDocksAbove = do
       _ -> return (All True)
 
   where
-    docks =
+    docks' =
       [ "Cairo-dock"
       , "Avant-window-navigator"
       ]
-    isDock  = anyQ (className =?) docks
+    isDock  = anyQ (className =?) docks'

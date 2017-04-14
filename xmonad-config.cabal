@@ -12,7 +12,7 @@ build-type:          Simple
 -- extra-source-files:
 cabal-version:       >=1.10
 
-executable xmonad
+executable xmonad-config
   hs-source-dirs:      .
   main-is:             xmonad.hs
   other-modules:      Local.DockWindows

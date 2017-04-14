@@ -1,0 +1,6 @@
+#!/bin/bash
+
+stack install xmonad
+stack install --local-bin-path "$PWD"
+cp xmonadctl ~/.local/bin/
+ln -sf xmonad-config "$1"
