@@ -26,7 +26,6 @@ import XMonad.Layout.LayoutCombinators ((|||))
 import qualified XMonad.Layout.LayoutCombinators as LC
 import XMonad.Layout.Minimize
 import XMonad.Actions.GridSelect
-import XMonad.Layout.LayoutHints
 import XMonad.Layout.MosaicAlt
 import XMonad.Layout.NoBorders
 import XMonad.Layout.Fullscreen (fullscreenSupport)
@@ -58,7 +57,7 @@ main = xmonad $ do
 
   -- hooks, layouts
   resetLayout $ emptyBSP ||| Full
-  modifyLayout $ squash $ renamed [CutWordsLeft 1] . minimize . mouseResize . borderResize . smartBorders . avoidStruts . layoutHintsToCenter
+  modifyLayout $ squash $ renamed [CutWordsLeft 1] . minimize . mouseResize . borderResize . smartBorders . avoidStruts
   let
     floats =
       [ "baka-mplayer"
