@@ -141,12 +141,13 @@ main = xmonad $ do
   -- launch in terminal
   "M-S-p" ~~ flip prompt myXPConfigTerm . (++ " -e") =<< asks (XM.terminal . XM.config)
 
-  "M3-p" ~~ spawnSelected defaultGSConfig [
+  "M3-p" ~~ spawnSelected def [
       "spacefm"
     , "google-chrome-stable"
     , "seahorse"
     , "urxvt"
     , "atom"
+    , "krita"
     ]
 
   -- close focused window
