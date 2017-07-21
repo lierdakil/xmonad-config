@@ -34,6 +34,7 @@ import XMonad.Prompt
 import XMonad.Prompt.Shell
 import XMonad.Prompt.Window
 import XMonad.Prompt.XMonad
+import XMonad.Util.Replace
 
 import XMonad.Config.Prime.Monadic hiding ((|||))
 
@@ -44,7 +45,9 @@ import Local.Popup
 import Local.Xmobar
 
 main :: IO ()
-main = xmonad $ do
+main = do
+ replace
+ xmonad $ do
   startWith def{XM.keys = const def}
 
   terminal           =: "urxvtc"
@@ -214,6 +217,7 @@ main = xmonad $ do
 
   -- Quit xmonad
   "M-S-q" ~~ io exitSuccess
+  "M-S-f" ~~ restart "/home/livid/bin/switchWM" True
 
   -- Restart xmonad
   "M-q" ~~ spawn "xmonad --recompile; xmonad --restart"
