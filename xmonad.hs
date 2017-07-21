@@ -7,6 +7,7 @@ import System.IO
 import Control.Exception
 import Control.Concurrent
 import System.Exit
+import Data.Monoid (All(..))
 import qualified Data.Map as M
 
 import qualified XMonad as XM
@@ -82,6 +83,12 @@ main = do
 
   handleEventHook =+ fullscreenEventHook
   handleEventHook =+ minimizeEventHook
+  handleEventHook =+ \ev -> do
+    let w = ev_window ev
+    whenX (className =? "Launchy" `runQuery` w) $ withDisplay $ \d -> io $ do
+      setWindowBorderWidth d w 0
+      raiseWindow d w
+    return (All True)
 
   apply ewmh
   apply docks
