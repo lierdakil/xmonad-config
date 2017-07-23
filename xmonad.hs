@@ -26,7 +26,7 @@ import XMonad.Actions.MouseResize
 import XMonad.Layout.LayoutCombinators ((|||))
 import qualified XMonad.Layout.LayoutCombinators as LC
 import XMonad.Layout.Minimize
-import XMonad.Actions.GridSelect
+-- import XMonad.Actions.GridSelect
 import XMonad.Layout.MosaicAlt
 import XMonad.Layout.NoBorders
 import XMonad.Layout.Fullscreen (fullscreenSupport)
@@ -44,6 +44,8 @@ import Local.Util
 import Local.DockWindows
 import Local.Popup
 import Local.Xmobar
+
+import XMonad.Util.Dmenu
 
 main :: IO ()
 main = do
@@ -149,16 +151,27 @@ main = do
   "M-p" ~~ shellPrompt myXPConfig
 
   -- launch in terminal
-  "M-S-p" ~~ flip prompt myXPConfigTerm . (++ " -e") =<< asks (XM.terminal . XM.config)
+  "M-S-p" ~~ do
+    term <- asks (XM.terminal . XM.config)
+    prompt (term ++ " -e") myXPConfigTerm
 
-  "M3-p" ~~ spawnSelected def [
-      "spacefm"
-    , "google-chrome-stable"
-    , "seahorse"
-    , "urxvt"
-    , "atom"
-    , "krita"
-    ]
+  "M3-p" ~~ do
+    let opts =
+          [ "spacefm"
+          , "google-chrome-stable"
+          , "seahorse"
+          , "urxvt"
+          , "atom"
+          , "krita"
+          ]
+        args = ["-l", "15"]
+    opt <- menuArgs "dmenu" args opts
+    spawn opt
+
+  "M3-S-p" ~~ do
+    let args = ["-l", "15"]
+    opt <- menuArgs "dmenu-xdg" args []
+    spawn opt
 
   -- close focused window
   "M1-S-c" ~~ kill
@@ -315,7 +328,7 @@ main = do
       ]
 
   mouseBindings =+
-        [ ((0, 8), const $ goToSelected def)
+        [ ((0, 8), const $ return ())
         , ((0, 9), mouseGesture gestures)
         , ((controlMask .|. shiftMask, 1), \w -> focus w >> asks display >>= io . flip raiseWindow w >> Flex.mouseWindow Flex.discrete w)
         , ((0, 10), return $ spawn "toggle-scroll-emulation")
