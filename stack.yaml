@@ -2,7 +2,7 @@ flags:
   xmobar:
     with_xft: true
 packages:
-- '.'
+- .
 extra-deps:
 - xmobar-0.24.5
-resolver: lts-8.23
+resolver: nightly-2017-09-28
