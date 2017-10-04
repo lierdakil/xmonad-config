@@ -5,4 +5,4 @@ packages:
 - .
 extra-deps:
 - xmobar-0.24.5
-resolver: nightly-2017-09-28
+resolver: lts-9.6
