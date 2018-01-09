@@ -76,10 +76,12 @@ main = do
       , "kdesktop"
       , "cairo-dock"
       , "trayer"
+      , "xfce4-notifyd"
       ]
   manageHook =+
     composeAll
       [ isClass floats     --> doFloat
+      , isClass ignored    --> doIgnore
       , isResource ignored --> doIgnore
       ]
 
