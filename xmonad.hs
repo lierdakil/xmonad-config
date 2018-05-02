@@ -119,7 +119,7 @@ main = do
   -- M = M4 = RALT
   -- M1 = LALT
   -- M3 = RCTL
-  lifxToken <- io $ try (read <$> readFile ".lifxToken")
+  lifxToken <- io $ try (readFile ".lifxToken")
   let
     layout' f = withWindowSet $ f . description . W.layout . W.workspace . W.current
     lifxPower :: PowerState -> X ()
