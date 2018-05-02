@@ -4,4 +4,4 @@ stack install xmonad
 stack install xmobar
 stack install --local-bin-path "$PWD"
 cp xmonadctl ~/.local/bin/
-ln -sf xmonad-config "$1"
+[ -n "$1" ] && ln -sf xmonad-config "$1"
