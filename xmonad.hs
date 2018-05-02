@@ -63,7 +63,7 @@ main = do
 
   -- hooks, layouts
   resetLayout $ emptyBSP ||| Full
-  modifyLayout $ squash $ renamed [CutWordsLeft 1] . minimize . mouseResize . borderResize . smartBorders . avoidStruts
+  modifyLayout $ Layout . renamed [CutWordsLeft 1] . minimize . mouseResize . borderResize . smartBorders . avoidStruts
   let
     floats =
       [ "baka-mplayer"
@@ -94,9 +94,9 @@ main = do
       raiseWindow d w
     return (All True)
 
-  apply ewmh
-  apply docks
-  apply' fullscreenSupport
+  apply $ exc . ewmh
+  apply $ exc . docks
+  apply $ exc . fullscreenSupport
 
   -- startupHook =+ setWMName "LG3D"
 
@@ -308,7 +308,7 @@ main = do
   "M--"      ~~ withFocused minimizeWindow
   "M-S--"    ~~ sendMessage RestoreNextMinimizedWin
 
-  apply $ navigation2DP def
+  apply $ exc . navigation2DP def
            ("<Up>", "<Left>", "<Down>", "<Right>")
            [("M3-",   windowGo  ),
             ("M3-S-", windowSwap)]

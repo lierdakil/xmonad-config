@@ -25,4 +25,4 @@ popup = dzenConfig pc
 popupConfig :: Prime
 popupConfig = do
   handleEventHook =+ serverModeEventHookF "XMONAD_POPUP" popup
-  apply $ withUrgencyHook $ MyUrgencyHook popup
+  apply $ exc . withUrgencyHook (MyUrgencyHook popup)

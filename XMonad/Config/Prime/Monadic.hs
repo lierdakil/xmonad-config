@@ -2,9 +2,7 @@
 {-# LANGUAGE FlexibleContexts          #-}
 {-# LANGUAGE FlexibleInstances         #-}
 {-# LANGUAGE FunctionalDependencies    #-}
-{-# LANGUAGE ImpredicativeTypes        #-}
-{-# LANGUAGE KindSignatures            #-}
-{-# LANGUAGE TypeOperators             #-}
+{-# LANGUAGE Rank2Types                #-}
 {-# LANGUAGE UndecidableInstances      #-}
 {-# LANGUAGE GADTs                     #-}
 -----------------------------------------------------------------------------
@@ -46,6 +44,8 @@ focusedBorderColor,
 terminal,
 modMask,
 borderWidth,
+exc,
+Layout(Layout),
 focusFollowsMouse,
 clickJustFocuses,
 SettableClass(..),
@@ -88,17 +88,12 @@ onScreens,
 addLayout,
 resetLayout,
 modifyLayout,
-squash,
 
 -- * Updating the XConfig en masse
 -- $update
 startWith,
 apply,
-apply',
-squashXC,
 applyIO,
-applyIO',
-squashIO,
 
 -- * The rest of the world
 -- | Everything you know and love from the core "XMonad" module is available
@@ -111,8 +106,6 @@ lift,
 -- Regular people shouldn't need to know about these.
 Prime,
 Arr,
-CC(dict),
-Dict(Dict),
 
 -- * Example config
 -- $example
@@ -121,8 +114,6 @@ Dict(Dict),
 -- $troubleshooting
 ) where
 
--- base
-import           Control.Arrow                          (first, second)
 -- import           Control.Applicative                    ((<$>))
 import           Control.Monad.State
 import           Data.Monoid                            (All)
@@ -140,32 +131,11 @@ import qualified XMonad.StackSet                        as W
 
 -- xmonad-contrib
 
-import           XMonad.Layout.LayoutModifier           (LayoutModifier,
-                                                         ModifiedLayout)
 import           XMonad.Util.EZConfig                   (additionalKeysP,
                                                          additionalMouseBindings,
                                                          checkKeymap,
                                                          removeKeysP,
                                                          removeMouseBindings)
-
--- copied from Data.Constraint
-
-import GHC.Exts (Constraint)
-
---- imports for CC instances
-
-import qualified XMonad.Layout.Combo                    (CombineTwo)
-import qualified XMonad.Layout.ComboP                   (CombineTwoP)
-import qualified XMonad.Layout.Groups                   (WithID)
-import qualified XMonad.Layout.IfMax                    (IfMax)
-import qualified XMonad.Layout.LayoutBuilder            (LayoutB, Predicate)
-import qualified XMonad.Layout.LayoutCombinators        (NewSelect)
-import qualified XMonad.Layout.MessageControl           (Ignore)
-import qualified XMonad.Layout.MultiToggle              (HList, MultiToggle)
-import qualified XMonad.Layout.OnHost                   (OnHost)
-import qualified XMonad.Layout.PerScreen                (PerScreen)
-import qualified XMonad.Layout.PerWorkspace             (PerWorkspace)
-import qualified XMonad.Layout.ToggleLayouts            (ToggleLayouts)
 
 -- $start_here
 -- To start with, create a @~\/.xmonad\/xmonad.hs@ that looks like this:
@@ -191,161 +161,6 @@ import qualified XMonad.Layout.ToggleLayouts            (ToggleLayouts)
 -- | A convenience constraint synonym. "Layout" is something that has Read and
 -- LayoutClass instances.
 type IsLayout l a = (Read (l a), LayoutClass l a)
-
--- | Typeclass used to prove that there is actually a layout inside
--- 'Layout'.
---
--- All layout modifiers like 'Mirror' must be instances of this class.
--- Most instances should be already defined. If not, in most cases you can
--- define one with
---
--- > instance CC Mod a where dict _ = Dict
---
--- Where Mod is your modifier.
---
--- All modifiers that are instances of 'LayoutModifier' are automatically
--- instances of 'CC'.
-class CC m a where
-  dict :: forall l. IsLayout l a => m l a -> Dict (IsLayout (m l) a)
-  cc :: forall l. m l a -> IsLayout l a :- IsLayout (m l) a
-  cc x = Sub $ dict x
-  {-# MINIMAL dict #-}
-
--- | This function wraps layout transformations and makes them a function
--- on existential type 'Layout'.
---
--- Layout transformation in question must be an instance of 'CC' typeclass.
-wrapLT :: (CC m a)
-       => (forall l. (LayoutClass l a) => l a -> m l a)
-       -> Layout a -> Layout a
-wrapLT m (Layout la) = Layout (m la) \\ cc (m la)
-
-wrapXC :: (CC m Window)
-       => (forall l. (LayoutClass l Window) => XConfig l -> XConfig (m l))
-       -> XConfig Layout -> XConfig Layout
-wrapXC m xc@XConfig{X.layoutHook = Layout la} =
-  let oldconfig = xc{X.layoutHook = la}
-      newconfig = m oldconfig
-  in newconfig{X.layoutHook = Layout $ X.layoutHook newconfig} \\ cc (X.layoutHook newconfig)
-
-wrapXCIO :: (CC m Window)
-       => (forall l. (LayoutClass l Window) => XConfig l -> IO (XConfig (m l)))
-       -> XConfig Layout -> IO (XConfig Layout)
-wrapXCIO m xc@XConfig{X.layoutHook = Layout la} =
-  let oldconfig = xc{X.layoutHook = la}
-  in do
-    newconfig <- m oldconfig
-    return newconfig{X.layoutHook = Layout $ X.layoutHook newconfig} \\ cc (X.layoutHook newconfig)
-
--- | Type-level composition, inspired by TypeCompose package.
-newtype ((f :: (* -> *) -> * -> *) :. (g :: (* -> *) -> * -> *)) l a = O (f (g l) a)
-infixl 9 :.
-
-unO :: (f :. g) l a -> f (g l) a
-unO (O fgla) = fgla
-
-class S f t | f -> t where
-  -- | Squashes a type m1 (m2 l) a into m3 l a. Use with 'modifyLayout' if you need
-  -- to apply it to function that adds more than one modifier to layout
-  --
-  -- Example:
-  --
-  -- > let myLayoutFunction = Mirror . Mirror . Mirror . Mirror
-  -- >
-  -- > modifyLayout $ squash $ myLayoutFunction
-  squash :: (l a -> f a) -> (l a -> t a)
-
-instance {-# INCOHERENT #-} S t t where
-  squash = id
-instance S ((f :. g) l') t => S (f (g l')) t where
-  squash = squash . (O .)
-
--- | Same as 'squash', but acts on XConfig. Use with 'apply''.
---
--- Example:
---
--- > let myLayoutFunction x = mirror $ mirror $ mirror $ mirror $ x
--- >     mirror xc = xc{X.layoutHook = Mirror $ X.layoutHook xc}
--- >
--- > apply $ squashXC $ myLayoutFunction
-squashXC :: S f t => (XConfig l -> XConfig f) -> XConfig l -> XConfig t
-squashXC f xc@XConfig{X.layoutHook = l} =
-  let fxc = f xc
-  in fxc{X.layoutHook = squash (const $ X.layoutHook fxc) l}
--- | Same as 'squashXC', but for 'IO' functions. Use with 'applyIO''
---
--- Example:
---
--- > let myLayoutFunction x = return $ mirror $ mirror $ mirror $ mirror $ x
--- >     mirror xc = xc{X.layoutHook = Mirror $ X.layoutHook xc}
--- >
--- > applyIO $ squashIO $ myLayoutFunction
-squashIO :: S f t => (XConfig l -> IO (XConfig f)) -> XConfig l -> IO (XConfig t)
-squashIO f xc = flip squashXC xc . const <$> f xc
-
----
---- Instances for composed layouts
----
-
-instance Read (m1 (m2 l) a) => Read ((m1 :. m2) l a) where
-  readsPrec i = map (first O) . readsPrec i
-
-instance Show (m1 (m2 l) a) => Show ((m1 :. m2) l a) where
-  show = show . unO
-
-instance LayoutClass (m1 (m2 l)) a => LayoutClass ((m1 :. m2) l) a where
-  runLayout ws@W.Workspace{W.layout = lay} =
-    (second (O <$>) <$>) . runLayout (ws{W.layout = unO lay})
-  handleMessage lay =
-    fmap (fmap O) . handleMessage (unO lay)
-  description = description . unO
-
--- | This instance ensures that it can be proven that composed modifiers
--- contain a Layout.
-instance (CC m1 a, CC m2 a) => CC (m1 :. m2) a where
-  dict x = Dict \\ trans (cc (unO x)) (cc undefined)
-
----
---- Modifier instances
----
-
-newtype LayoutB p l1 l2 a = LayoutB {unLayoutB :: XMonad.Layout.LayoutBuilder.LayoutB l1 l2 p a } deriving (Read, Show)
-
-instance ( Show a, Read a, Eq a, Typeable a
-         , XMonad.Layout.LayoutBuilder.Predicate p a, Show p
-         , IsLayout l1 a, IsLayout l2 a) => LayoutClass (LayoutB p l1 l2) a where
-  runLayout ws@W.Workspace{W.layout = lay} =
-    (second (LayoutB <$>) <$>) . runLayout (ws{W.layout = unLayoutB lay})
-  handleMessage lay =
-    fmap (fmap LayoutB) . handleMessage (unLayoutB lay)
-  description = description . unLayoutB
-
-instance CC Mirror a where dict _ = Dict
-instance IsLayout l a => CC (Choose l) a where dict _ = Dict
-instance (IsLayout l a) => CC (XMonad.Layout.ToggleLayouts.ToggleLayouts l) a where dict _ = Dict
-instance (IsLayout l a, Show a) => CC (XMonad.Layout.PerWorkspace.PerWorkspace l) a where dict _ = Dict
-instance (IsLayout l a, Show a) => CC (XMonad.Layout.PerScreen.PerScreen l) a where dict _ = Dict
-instance (IsLayout l a, Show a) => CC (XMonad.Layout.OnHost.OnHost l) a where dict _ = Dict
-instance (Read b, Show b, Typeable a, XMonad.Layout.MultiToggle.HList b a) => CC (XMonad.Layout.MultiToggle.MultiToggle b) a where dict _ = Dict
-instance (Message m) => CC (XMonad.Layout.MessageControl.Ignore m) a where dict _ = Dict
-instance (IsLayout l a) => CC (XMonad.Layout.LayoutCombinators.NewSelect l) a where dict _ = Dict
-instance ( Eq a, Read a, Show a
-         , Typeable a, IsLayout l a
-         , Read p, Show p, XMonad.Layout.LayoutBuilder.Predicate p a
-         ) => CC (LayoutB p l) a where dict _ = Dict
-instance (IsLayout l Window) => CC (XMonad.Layout.IfMax.IfMax l) Window where dict _ = Dict
-instance (IsLayout l (), IsLayout l1 Window)
-      => CC (XMonad.Layout.ComboP.CombineTwoP (l ()) l1) Window where dict _ = Dict
-instance (IsLayout l (), IsLayout l1 a, Read a, Show a, Eq a, Typeable a)
-      => CC (XMonad.Layout.Combo.CombineTwo (l ()) l1) a where dict _ = Dict
-instance CC XMonad.Layout.Groups.WithID a where dict _ = Dict
-
--- NOTE: Groups could never be used with an existential, since Read instance
--- parametrizes on both layout parameters.
--- instance CC (XMonad.Layout.Groups.Groups l) Window where dict _ = Dict
-
--- This is catch-all for "proper" layout modifiers
-instance LayoutModifier m a => CC (ModifiedLayout m) a where dict _ = Dict
 
 --
 -- The Prime Monad
@@ -785,10 +600,9 @@ resetLayout r = modify $ \c -> c { X.layoutHook = Layout r }
 -- > import XMonad.Layout.NoBorders
 -- > ...
 -- >   modifyLayout smartBorders
-modifyLayout :: (CC m Window)
-              => (forall l. (LayoutClass l Window) => l Window -> m l Window)
+modifyLayout :: (forall l. (IsLayout l Window) => l Window -> Layout Window)
               -> Prime
-modifyLayout f = modify $ \c -> c { X.layoutHook = wrapLT f $ X.layoutHook c }
+modifyLayout f = modify $ \c@XConfig{ X.layoutHook = Layout l } -> c { X.layoutHook = f l }
 
 -- $update
 -- Finally, there are a few contrib modules that bundle multiple attribute
@@ -830,28 +644,22 @@ startWith :: IsLayout l Window => XConfig l -> Prime
 startWith = put . exc
 
 -- | Turns a pure function on 'XConfig' into a 'Prime.
-apply :: (XConfig Layout -> XConfig Layout) -> Prime
-apply = modify
-
--- | Turns a pure function on 'XConfig' into a 'Prime.
 -- This version also accepts functions that change layout.
 -- Use 'squashXC' for functions adding more than one layout modifier:
 --
 -- > apply' $ squashXC myFunction
-apply' :: (CC m Window) => (forall l. (LayoutClass l Window) => XConfig l -> XConfig (m l)) -> Prime
-apply' x = apply $ wrapXC x
-
--- | Turns an IO function on 'XConfig' into a 'Prime.
-applyIO :: (XConfig Layout -> IO (XConfig Layout)) -> Prime
-applyIO f = get >>= lift . f >>= put
+apply :: (forall l. (IsLayout l Window) => XConfig l -> XConfig Layout) -> Prime
+apply f = modify $ \xc@XConfig{X.layoutHook = Layout l} -> f xc{X.layoutHook = l}
 
 -- | Turns an IO function on 'XConfig' into a 'Prime.
 -- This version also accepts functions that change layout.
 -- Use 'squashIO' for functions adding more than one layout modifier:
 --
 -- > applyIO' $ squashIO myFunction
-applyIO' :: (CC m Window) => (forall l. (LayoutClass l Window) => XConfig l -> IO (XConfig (m l))) -> Prime
-applyIO' f = applyIO (wrapXCIO f)
+applyIO :: forall r. (IsLayout r Window) => (forall l. (LayoutClass l Window) => XConfig l -> IO (XConfig r)) -> Prime
+applyIO f = get >>= lift . m >>= put
+  where
+  m xc@XConfig{X.layoutHook = Layout l} = fmap exc $ f $ xc{X.layoutHook = l}
 
 -- $example
 -- As an example, I've included below a subset of my current config. Note that
@@ -916,21 +724,3 @@ applyIO' f = applyIO (wrapXCIO f)
 -- >   (xmonad $ do
 -- >      nothing -- Prime config here.
 -- >   )
-
--- This is a stripped-down version of Data.Constraint from constraints-0.6
--- License	BSD3
--- Copyright	Copyright (C) 2011-2015 Edward A. Kmett <ekmett@gmail.com>
-data Dict :: Constraint -> * where
-  Dict :: a => Dict a
-
-infixr 9 :-
-
-newtype a :- b = Sub (a => Dict b)
-
-infixl 1 \\ -- required comment
-
-(\\) :: a => (b => r) -> (a :- b) -> r
-r \\ Sub Dict = r
-
-trans :: (b :- c) -> (a :- b) -> a :- c
-trans f g = Sub $ Dict \\ f \\ g
