@@ -280,10 +280,10 @@ main = do
   keys =+ [("M3-" ++ k, lifxBrightness v) | (v,k) <- zip [0.1,0.2..1] $ map show ([1..9 :: Int]++[0])]
 
   -- razer blackwidow macro keys
-  "<XF86Tools>"              ~~ spawn "winusb -mjk"
+  -- "<XF86Tools>"              ~~ spawn "winusb -mjk"
   -- "<XF86Launch5>"            ~~ spawn "true"
   -- "<XF86Launch6>"            ~~ spawn "true"
-  -- "<XF86Launch7>"            ~~ spawn "true"
+  "<XF86Launch7>"            ~~ spawn "bluetooth-connect"
   "<XF86Launch8>"            ~~ spawn "pamoveallto"
 
   "C-<KP_Left>"      ~~ sendMessage (ExpandTowards L)
