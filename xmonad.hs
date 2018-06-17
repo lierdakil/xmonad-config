@@ -256,7 +256,7 @@ main = do
 
   -- utility bindings ported from xbindkeysrc
   -- mod3Mask = R_CTRL, see xmodmap
-  "<XF86Sleep>"              ~~ spawn "loginctl lock-session $XDG_SESSION_ID"
+  "<XF86Sleep>"              ~~ spawn "xset dpms force off"
   "<XF86AudioLowerVolume>"   ~~ spawn "pavol -2000"
   "<XF86AudioRaiseVolume>"   ~~ spawn "pavol +2000"
   "<Pause>"                  ~~ spawn "apod.sh"
@@ -268,6 +268,7 @@ main = do
   "<XF86AudioPlay>"          ~~ spawn "mpc toggle"
   "M1-<F3>"                  ~~ spawn "xkill"
   "M3-r"                     ~~ spawn "mklink.sh"
+  "M3-t"                     ~~ spawn "shlink.sh"
   "M3-s"                     ~~ spawn "screencast"
   "M3-l"                     ~~ spawn "mlock"
   "M3-<F11>"                 ~~ lifxPower Off
