@@ -331,10 +331,10 @@ main = do
       ]
 
   mouseBindings =+
-        [ ((0, 8), const $ return ())
+        [ ((0, 8), windows . W.sink)
         , ((0, 9), mouseGesture gestures)
         , ((controlMask .|. shiftMask, 1), \w -> focus w >> asks display >>= io . flip raiseWindow w >> Flex.mouseWindow Flex.discrete w)
         , ((0, 10), return $ spawn "toggle-scroll-emulation")
         , ((0, 11), windows . W.sink)
-        , ((0, 12), (>> kill) . focus)
+        , ((0, 12), mouseGesture gestures)
         ]
