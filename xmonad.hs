@@ -256,7 +256,7 @@ main = do
 
   -- utility bindings ported from xbindkeysrc
   -- mod3Mask = R_CTRL, see xmodmap
-  "<XF86Sleep>"              ~~ spawn "xset dpms force off"
+  "<XF86Sleep>"              ~~ spawn "loginctl lock-session"
   "<XF86AudioLowerVolume>"   ~~ spawn "pavol -2000"
   "<XF86AudioRaiseVolume>"   ~~ spawn "pavol +2000"
   "<Pause>"                  ~~ spawn "apod.sh"
