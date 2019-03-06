@@ -114,9 +114,11 @@ data ColorSpec =   Hue Int
                  | RGB Int Int Int
                 --  | ColorHash String
 
+instance Semigroup Color where
+  (Color a) <> (Color b) = Color (a++b)
+
 instance Monoid Color where
   mempty = Color []
-  mappend (Color a) (Color b) = Color (a++b)
 
 addColor :: Color -> ColorCommand -> ColorCommand
 addColor c cmd@LifxCommand{lcAction=(a@ColorAction{ccColor=cs})} =

@@ -20,6 +20,7 @@ import XMonad.Actions.WorkspaceNames
 import XMonad.Hooks.EwmhDesktops
 import XMonad.Hooks.ManageDocks
 import XMonad.Hooks.Minimize
+import XMonad.Actions.Minimize
 import XMonad.Layout.BinarySpacePartition
 import XMonad.Layout.BorderResize
 import XMonad.Actions.MouseResize
@@ -139,8 +140,8 @@ main = do
                               , height=32}
     myXPConfigTerm = myXPConfig {fgColor="green"}
   "M1-0" ~~ viewEmptyWorkspace
-  "M1-S--" ~~ windowPromptGoto myXPConfig
-  "M1-S-=" ~~ windowPromptBring myXPConfig
+  "M1-S--" ~~ windowPrompt myXPConfig Goto allWindows
+  "M1-S-=" ~~ windowPrompt myXPConfig Bring allWindows
   "M1-S-0" ~~ tagToEmptyWorkspace
 
   -- [((controlMask .|. mod1Mask, k), spawn $ "chvt "++show (i::Int))
@@ -307,7 +308,7 @@ main = do
   -- "M-C-n"         ~~ sendMessage SelectNode
   -- "M-S-n"          ~~ sendMessage MoveNode
   "M--"      ~~ withFocused minimizeWindow
-  "M-S--"    ~~ sendMessage RestoreNextMinimizedWin
+  "M-S--"    ~~ withLastMinimized maximizeWindow
 
   apply $ exc . navigation2DP def
            ("<Up>", "<Left>", "<Down>", "<Right>")
