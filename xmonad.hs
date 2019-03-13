@@ -338,4 +338,6 @@ main = do
         , ((0, 10), return $ spawn "toggle-scroll-emulation")
         , ((0, 11), windows . W.sink)
         , ((0, 12), mouseGesture gestures)
+        , ((mod3Mask, 4), modifyWindowOpacity 0x1fffffff)
+        , ((mod3Mask, 5), modifyWindowOpacity (-0x1fffffff))
         ]
