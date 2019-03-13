@@ -40,15 +40,15 @@ bind ~~ act = keys =+ [(bind, act)]
 modifyWindowOpacity :: CInt -> Window -> X ()
 modifyWindowOpacity delta w = withDisplay $ \d -> do
   atom_NET_WM_WINDOW_OPACITY <- getAtom "_NET_WM_WINDOW_OPACITY"
-  opacity :: CUInt <- fromMaybe 0xffffffff . safeHead . fromMaybe []
+  opacity :: CUInt <- fromMaybe maxBound . safeHead . fromMaybe []
          <$> io (rawGetWindowProperty 32 d atom_NET_WM_WINDOW_OPACITY w)
   let newOpacity
        -- inequalities may look weird, but that's algebraically equivalent to
        -- what you expect except avoids overflow
-       | delta >= 0, opacity > 0xffffffff - delta'
-       = 0xffffffff
-       | delta < 0, opacity < -delta'
-       = 0
+       | delta >= 0, opacity > maxBound - delta'
+       = maxBound
+       | delta < 0, opacity < minBound - delta'
+       = minBound
        | otherwise = opacity + delta'
       delta' = fromIntegral delta
   format_cardinal <- getAtom "CARDINAL"
