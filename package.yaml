@@ -1,0 +1,37 @@
+name: xmonad-config
+version: '0.1.0.0'
+synopsis: My xmonad config
+license: BSD3
+author: Nikolay Yakimov
+maintainer: root@livid.pp.ru
+copyright: 2016 Nikolay Yakimov
+category: System
+github: lierdakil/xmonad-config
+dependencies:
+- base
+ghc-options: -threaded -rtsopts -with-rtsopts=-N -Wall
+library:
+  source-dirs: lib
+  dependencies:
+  - xmonad
+  - xmonad-contrib
+  - bytestring
+  - data-default
+  - mtl
+  - aeson
+  - connection
+  - http-conduit
+executables:
+  xmonad-config:
+    main: xmonad.hs
+    source-dirs: src
+    dependencies:
+    - xmonad-config
+    - xmonad
+    - xmonad-contrib
+    - containers
+  xmonadctl:
+    main: xmonadctl.hs
+    source-dirs: src
+    dependencies:
+    - X11

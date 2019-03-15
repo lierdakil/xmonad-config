@@ -1,47 +1,75 @@
-name:                xmonad-config
-version:             0.1.0.0
-synopsis:            Initial project template from stack
-description:         Please see README.md
-homepage:            https://github.com/githubuser/t#readme
-license:             BSD3
-author:              Author name here
-maintainer:          example@example.com
-copyright:           2016 Author name here
-category:            Web
-build-type:          Simple
--- extra-source-files:
-cabal-version:       >=1.10
+cabal-version: 1.12
+
+-- This file has been generated from package.yaml by hpack version 0.31.1.
+--
+-- see: https://github.com/sol/hpack
+--
+-- hash: 0a7965537b31d02001a36c2f1b759c5f248a78402a7577568d76015476b52bf4
+
+name:           xmonad-config
+version:        0.1.0.0
+synopsis:       My xmonad config
+category:       System
+homepage:       https://github.com/lierdakil/xmonad-config#readme
+bug-reports:    https://github.com/lierdakil/xmonad-config/issues
+author:         Nikolay Yakimov
+maintainer:     root@livid.pp.ru
+copyright:      2016 Nikolay Yakimov
+license:        BSD3
+build-type:     Simple
+
+source-repository head
+  type: git
+  location: https://github.com/lierdakil/xmonad-config
+
+library
+  exposed-modules:
+      Local.DockWindows
+      Local.Lifx
+      Local.Popup
+      Local.Util
+      Local.Xmobar
+      XMonad.Config.Prime.Monadic
+  other-modules:
+      Paths_xmonad_config
+  hs-source-dirs:
+      lib
+  ghc-options: -threaded -rtsopts -with-rtsopts=-N -Wall
+  build-depends:
+      aeson
+    , base
+    , bytestring
+    , connection
+    , data-default
+    , http-conduit
+    , mtl
+    , xmonad
+    , xmonad-contrib
+  default-language: Haskell2010
 
 executable xmonad-config
-  hs-source-dirs:      .
-  main-is:             xmonad.hs
-  other-modules:      Local.DockWindows
-                      Local.Lifx
-                      Local.Util
-                      Local.Popup
-                      Local.Xmobar
-                      XMonad.Config.Prime.Monadic
-  ghc-options:         -threaded -rtsopts -with-rtsopts=-N
-  build-depends:       base
-                     , xmonad
-                     , xmonad-contrib
-                     , bytestring
-                     , data-default
-                     , mtl
-                     , containers
-                     , aeson
-                     , connection
-                     , http-conduit
-                     , ghc-prim
-                     , process
-                     , template-haskell
-  default-language:    Haskell2010
-  ghc-options: -Wall
+  main-is: xmonad.hs
+  other-modules:
+      Paths_xmonad_config
+  hs-source-dirs:
+      src
+  ghc-options: -threaded -rtsopts -with-rtsopts=-N -Wall
+  build-depends:
+      base
+    , containers
+    , xmonad
+    , xmonad-config
+    , xmonad-contrib
+  default-language: Haskell2010
 
 executable xmonadctl
-  hs-source-dirs: .
   main-is: xmonadctl.hs
-  ghc-options:         -threaded -rtsopts -with-rtsopts=-N
-  build-depends:       base
-                     , X11
-  default-language:    Haskell2010
+  other-modules:
+      Paths_xmonad_config
+  hs-source-dirs:
+      src
+  ghc-options: -threaded -rtsopts -with-rtsopts=-N -Wall
+  build-depends:
+      X11
+    , base
+  default-language: Haskell2010

@@ -1,5 +1,6 @@
 #!/bin/bash
 
+hpack
 cabal new-install xmonad --overwrite-policy=always
 cabal new-install xmobar --overwrite-policy=always
 cabal new-install . --overwrite-policy=always
