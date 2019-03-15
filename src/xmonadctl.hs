@@ -2,7 +2,6 @@ import Graphics.X11.Xlib
 import Graphics.X11.Xlib.Extras
 import System.Environment
 import System.IO
-import Data.Char
 import Control.Monad
 
 main :: IO ()
@@ -11,9 +10,7 @@ main = parse True "XMONAD_COMMAND" =<< getArgs
 parse :: Bool -> String -> [String] -> IO ()
 parse input addr args =
   case args of
-    ["--"]
-      | input -> repl addr
-      | otherwise -> return ()
+    ["--"] -> when input $ repl addr
     ("--":xs) -> sendAll addr xs
     ("-a":a:xs) -> parse input a xs
     ("-h":_) -> showHelp
@@ -21,20 +18,13 @@ parse input addr args =
     ("-?":_) -> showHelp
     (a@('-':_):_) -> hPutStrLn stderr ("Unknown option " ++ a)
     (x:xs) -> sendCommand addr x >> parse False addr xs
-    []
-      | input -> repl addr
-      | otherwise -> return ()
+    [] -> when input $ repl addr
 
 repl :: String -> IO ()
-repl addr = do
-  e <- isEOF
-  unless e $
-    do l <- getLine
-       sendCommand addr l
-       repl addr
+repl addr = mapM_ (sendCommand addr) . lines =<< getContents
 
 sendAll :: String -> [String] -> IO ()
-sendAll addr = foldr (\a b -> sendCommand addr a >> b) (return ())
+sendAll addr = mapM_ (sendCommand addr)
 
 sendCommand :: String -> String -> IO ()
 sendCommand addr s = do
@@ -52,11 +42,11 @@ sendCommand addr s = do
 showHelp :: IO ()
 showHelp = do
   pn <- getProgName
-  putStrLn
-    ("Send commands to a running instance of xmonad. xmonad.hs must be configured with XMonad.Hooks.ServerMode to work.\n-a atomname can be used at any point in the command line arguments to change which atom it is sending on.\nIf sent with no arguments or only -a atom arguments, it will read commands from stdin.\nEx:\n" ++
-     pn ++
-     " cmd1 cmd2\n" ++
-     pn ++
-     " -a XMONAD_COMMAND cmd1 cmd2 cmd3 -a XMONAD_PRINT hello world\n" ++
-     pn ++
-     " -a XMONAD_PRINT # will read data from stdin.\nThe atom defaults to XMONAD_COMMAND.")
+  putStrLn $
+    "Send commands to a running instance of xmonad. xmonad.hs must be configured with XMonad.Hooks.ServerMode to work.\n\
+    \-a atomname can be used at any point in the command line arguments to change which atom it is sending on.\n\
+    \If sent with no arguments or only -a atom arguments, it will read commands from stdin.\
+    \\nEx:\n" ++ pn ++ " cmd1 cmd2\n\
+    \" ++ pn ++ " -a XMONAD_COMMAND cmd1 cmd2 cmd3 -a XMONAD_PRINT hello world\n\
+    \" ++ pn ++ " -a XMONAD_PRINT # will read data from stdin.\n\
+    \The atom defaults to XMONAD_COMMAND."
