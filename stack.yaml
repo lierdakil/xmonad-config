@@ -1,8 +1,0 @@
-flags:
-  xmobar:
-    with_xft: true
-packages:
-- .
-extra-deps:
-- xmobar-0.29.4
-resolver: lts-13.10
