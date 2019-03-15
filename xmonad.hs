@@ -37,6 +37,7 @@ import XMonad.Prompt.Shell
 import XMonad.Prompt.Window
 import XMonad.Prompt.XMonad
 import XMonad.Util.Replace
+import XMonad.Util.Run
 
 import XMonad.Config.Prime.Monadic hiding ((|||))
 
@@ -278,6 +279,9 @@ main = do
   "M3-S-/"                   ~~ spawn "hexchat -e -c 'gui hide'"
   "M3-<F6>"                  ~~ spawn "toggle-touchpad"
   "<Print>"                  ~~ spawn "screenshot"
+  "M3-S-<Backspace>"         ~~
+    lines <$> runProcessWithInput "pidof" ["deadd-notification-center"] [] >>=
+    safeSpawn "kill" . ("-USR1":)
 
   keys =+ [("M3-" ++ k, lifxBrightness v) | (v,k) <- zip [0.1,0.2..1] $ map show ([1..9 :: Int]++[0])]
 
