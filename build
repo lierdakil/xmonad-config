@@ -1,7 +1,7 @@
 #!/bin/bash
 
-stack install xmonad
-stack install xmobar
-stack install --local-bin-path "$PWD"
-cp xmonadctl ~/.local/bin/
+cabal new-install xmonad --overwrite-policy=always
+cabal new-install xmobar --overwrite-policy=always
+cabal new-install . --overwrite-policy=always
+cp xmobar xmonad xmonadctl ~/.local/bin/
 [ -n "$1" ] && ln -sf xmonad-config "$1"

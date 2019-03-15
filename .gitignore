@@ -6,3 +6,8 @@ xmonad-config
 xmonad-*-linux
 xmonad.state
 xmonadctl
+xmobar
+xmonad
+.ghc.environment.*
+dist
+dist-newstyle

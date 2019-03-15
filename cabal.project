@@ -1,0 +1,4 @@
+packages: xmonad-config.cabal
+package xmobar
+  flags: +with_xft
+symlink-bindir: .
