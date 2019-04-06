@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 0a7965537b31d02001a36c2f1b759c5f248a78402a7577568d76015476b52bf4
+-- hash: 4f3152fc683a11401fc95832bc995176cfa1968152ddcee0883f0d5f69350d5d
 
 name:           xmonad-config
 version:        0.1.0.0
@@ -25,6 +25,7 @@ source-repository head
 library
   exposed-modules:
       Local.DockWindows
+      Local.FixEWMH
       Local.Lifx
       Local.Popup
       Local.Util

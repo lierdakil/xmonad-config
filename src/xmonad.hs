@@ -48,6 +48,7 @@ import Local.Popup
 import Local.Xmobar
 
 import XMonad.Util.Dmenu
+import Local.FixEWMH
 
 main :: IO ()
 main = do
@@ -97,6 +98,7 @@ main = do
     return (All True)
 
   apply $ exc . ewmh
+  startupHook =+ fixSupportedAtoms
   apply $ exc . docks
   apply $ exc . fullscreenSupport
 
