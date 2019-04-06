@@ -25,4 +25,9 @@ popup = dzenConfig pc
 popupConfig :: Prime
 popupConfig = do
   handleEventHook =+ serverModeEventHookF "XMONAD_POPUP" popup
-  apply $ exc . withUrgencyHook (MyUrgencyHook popup)
+  apply $ exc . withUrgencyHookC (MyUrgencyHook popup) muhConfig
+  where
+    muhConfig = urgencyConfig {
+        suppressWhen = Focused
+      , remindWhen = Repeatedly 5 5
+      }
