@@ -56,7 +56,7 @@ main = do
  xmonad $ do
   startWith def{XM.keys = const def}
 
-  terminal           =: "kitty"
+  terminal           =: "alacritty"
   focusFollowsMouse  =: False
   clickJustFocuses   =: True
   modMask            =: mod4Mask
