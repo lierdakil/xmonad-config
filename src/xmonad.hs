@@ -27,7 +27,7 @@ import XMonad.Actions.MouseResize
 import XMonad.Layout.LayoutCombinators ((|||))
 import qualified XMonad.Layout.LayoutCombinators as LC
 import XMonad.Layout.Minimize
--- import XMonad.Actions.GridSelect
+import XMonad.Actions.GridSelect
 import XMonad.Layout.MosaicAlt
 import XMonad.Layout.NoBorders
 import XMonad.Layout.Fullscreen (fullscreenSupport)
@@ -197,6 +197,9 @@ main = do
   -- Move focus to the previous window
   "M-k" ~~ windows W.focusUp
   "M1-S-<Tab>" ~~ windows W.focusUp
+
+  -- Grid select
+  "C-M1-<Tab>" ~~ goToSelected def
 
   -- Move focus to the master window
   "M-m" ~~ windows W.focusMaster
