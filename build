@@ -4,5 +4,4 @@ hpack
 cabal new-install xmonad --overwrite-policy=always
 cabal new-install xmobar --overwrite-policy=always
 cabal new-install . --overwrite-policy=always
-cp xmobar xmonad xmonadctl ~/.local/bin/
-[ -n "$1" ] && ln -sf xmonad-config "$1"
+[ -n "$1" ] && ln -sf $HOME/.local/bin/xmonad-config "$1"
