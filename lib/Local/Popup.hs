@@ -1,6 +1,6 @@
 module Local.Popup where
 
-import XMonad.Util.Dzen
+import XMonad.Actions.ShowText
 import XMonad.Config.Prime.Monadic
 import XMonad.Hooks.UrgencyHook
 import XMonad.Util.NamedWindows
@@ -17,14 +17,20 @@ instance UrgencyHook MyUrgencyHook where
         pop (show name ++ " requests your attention on workspace " ++ index)
 
 popup :: String -> X ()
-popup = dzenConfig pc
+popup = flashText cf 2
   where
-    pc = onCurr (vCenter 22) >=> timeout 2 >=> background "darkgreen" >=> font "xft:Fira Mono:pixelsize=18"
-    background color = addArgs ["-bg", color]
+    cf = def {
+        st_font = "xft:Fira Mono:pixelsize=18"
+      , st_bg = "darkgreen"
+      , st_fg = "white"
+      }
+    -- pc = onCurr (vCenter 22) >=> timeout 2 >=> background "darkgreen" >=> font "xft:Fira Mono:pixelsize=18"
+    -- background color = addArgs ["-bg", color]
 
 popupConfig :: Prime
 popupConfig = do
   handleEventHook =+ serverModeEventHookF "XMONAD_POPUP" popup
+  handleEventHook =+ handleTimerEvent
   apply $ exc . withUrgencyHookC (MyUrgencyHook popup) muhConfig
   where
     muhConfig = urgencyConfig {
