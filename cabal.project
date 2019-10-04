@@ -1,3 +1,4 @@
 packages: xmonad-config.cabal
 package xmobar
   flags: +with_xft
+optimization: 2
