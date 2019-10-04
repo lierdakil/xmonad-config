@@ -47,7 +47,6 @@ import Local.DockWindows
 import Local.Popup
 import Local.Xmobar
 
-import XMonad.Util.Dmenu
 import Local.FixEWMH
 
 main :: IO ()
@@ -56,7 +55,7 @@ main = do
  xmonad $ do
   startWith def{XM.keys = const def}
 
-  terminal           =: "alacritty"
+  terminal           =: "urxvt"
   focusFollowsMouse  =: False
   clickJustFocuses   =: True
   modMask            =: mod4Mask
@@ -161,23 +160,15 @@ main = do
     term <- asks (XM.terminal . XM.config)
     prompt (term ++ " -e") myXPConfigTerm
 
-  "M3-p" ~~ do
-    let opts =
-          [ "spacefm"
-          , "google-chrome-stable"
-          , "seahorse"
-          , "urxvt"
-          , "atom"
-          , "krita"
-          ]
-        args = ["-l", "15"]
-    opt <- menuArgs "dmenu" args opts
-    spawn opt
+  "M3-p" ~~ spawnSelected def [ "spacefm"
+                              , "google-chrome-stable"
+                              , "seahorse"
+                              , "urxvt"
+                              , "atom"
+                              , "krita"
+                              ]
 
-  "M3-S-p" ~~ do
-    let args = ["-l", "15"]
-    opt <- menuArgs "dmenu-xdg" args []
-    spawn opt
+  "M3-S-p" ~~ safeSpawn "dmenu-xdg" ["-l", "15"]
 
   -- close focused window
   "M1-S-c" ~~ kill
