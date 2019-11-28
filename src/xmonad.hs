@@ -125,7 +125,7 @@ main = do
   hueToken <- io $ try (read <$> readFile ".hueToken" :: IO String)
   let
     layout' f = withWindowSet $ f . description . W.layout . W.workspace . W.current
-    lightsPower = lightsCommand lightsGroup . ParameterOn
+    lightsPower g = lightsCommand g . ParameterOn
     lightsBrightness = lightsCommand lightsGroup . ParameterBrightness
     lightsCt = lightsCommand lightsGroup . ParameterColor
     lightsCommand g c = io $
@@ -268,8 +268,10 @@ main = do
   "M3-t"                     ~~ spawn "shlink.sh"
   "M3-s"                     ~~ spawn "screencast"
   "M3-l"                     ~~ spawn "mlock"
-  "M3-<F11>"                 ~~ lightsPower False
-  "M3-<F12>"                 ~~ lightsPower True
+  "M3-<F11>"                 ~~ lightsPower "1" False
+  "M3-<F12>"                 ~~ lightsPower "1" True
+  "M3-S-<F11>"               ~~ lightsPower "2" False
+  "M3-S-<F12>"               ~~ lightsPower "2" True
   "M3-/"                     ~~ spawn "hexchat -e -c 'gui show'"
   "M3-S-/"                   ~~ spawn "hexchat -e -c 'gui hide'"
   "M3-<F6>"                  ~~ spawn "toggle-touchpad"
