@@ -41,7 +41,7 @@ import XMonad.Util.Run
 
 import XMonad.Config.Prime.Monadic hiding ((|||))
 
-import Local.Lifx
+import Local.Hue
 import Local.Util
 import Local.DockWindows
 import Local.Popup
@@ -122,18 +122,17 @@ main = do
   -- M = M4 = RALT
   -- M1 = LALT
   -- M3 = RCTL
-  lifxToken <- io $ try (read <$> readFile ".lifxToken")
+  hueToken <- io $ try (read <$> readFile ".hueToken" :: IO String)
   let
     layout' f = withWindowSet $ f . description . W.layout . W.workspace . W.current
-    lifxPower :: PowerState -> X ()
-    lifxPower s = lifxCommand $ group "Room" . powerState s
-    lifxBrightness :: Float -> X ()
-    lifxBrightness v = lifxCommand $ group "Room" . brightness v
-    lifxCommand :: Lifx a => (LifxCommand a -> LifxCommand a) -> X ()
-    lifxCommand c = io $
-      case lifxToken of
-        Right tok -> void . forkIO . void $ command tok c
+    lightsPower = lightsCommand lightsGroup . ParameterOn
+    lightsBrightness = lightsCommand lightsGroup . ParameterBrightness
+    lightsCt = lightsCommand lightsGroup . ParameterColor
+    lightsCommand g c = io $
+      case hueToken of
+        Right tok -> void . forkIO . void $ command tok g c
         Left err -> hPrint stderr (err :: SomeException)
+    lightsGroup = "1"
 
 
     myXPConfig :: XPConfig
@@ -269,8 +268,8 @@ main = do
   "M3-t"                     ~~ spawn "shlink.sh"
   "M3-s"                     ~~ spawn "screencast"
   "M3-l"                     ~~ spawn "mlock"
-  "M3-<F11>"                 ~~ lifxPower Off
-  "M3-<F12>"                 ~~ lifxPower On
+  "M3-<F11>"                 ~~ lightsPower False
+  "M3-<F12>"                 ~~ lightsPower True
   "M3-/"                     ~~ spawn "hexchat -e -c 'gui show'"
   "M3-S-/"                   ~~ spawn "hexchat -e -c 'gui hide'"
   "M3-<F6>"                  ~~ spawn "toggle-touchpad"
@@ -279,7 +278,8 @@ main = do
     lines <$> runProcessWithInput "pidof" ["deadd-notification-center"] [] >>=
     safeSpawn "kill" . ("-USR1":)
 
-  keys =+ [("M3-" ++ k, lifxBrightness v) | (v,k) <- zip [0.1,0.2..1] $ map show ([1..9 :: Int]++[0])]
+  keys =+ [("M3-" ++ k, lightsBrightness v) | (v,k) <- zip (map (floor . (*254)) [0.1,0.2..1 :: Float]) $ map show ([1..9 :: Int]++[0])]
+  keys =+ [("M3-S-" ++ k, lightsCt v) | (v,k) <- zip [153,186,219,252,285,318,351,384,417,454] $ map show ([1..9 :: Int]++[0])]
 
   -- razer blackwidow macro keys
   -- "<XF86Tools>"              ~~ spawn "winusb -mjk"

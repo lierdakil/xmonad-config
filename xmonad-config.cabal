@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 4f3152fc683a11401fc95832bc995176cfa1968152ddcee0883f0d5f69350d5d
+-- hash: be25f6e5a1b66dad96bb28437da0ebbea9c89a884abfebbd2a7d1056e29ed3eb
 
 name:           xmonad-config
 version:        0.1.0.0
@@ -26,6 +26,7 @@ library
   exposed-modules:
       Local.DockWindows
       Local.FixEWMH
+      Local.Hue
       Local.Lifx
       Local.Popup
       Local.Util
@@ -44,6 +45,7 @@ library
     , data-default
     , http-conduit
     , mtl
+    , text
     , xmonad
     , xmonad-contrib
   default-language: Haskell2010
