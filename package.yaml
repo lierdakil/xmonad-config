@@ -9,7 +9,7 @@ category: System
 github: lierdakil/xmonad-config
 dependencies:
 - base
-ghc-options: -threaded -rtsopts -with-rtsopts=-N -Wall
+ghc-options: -Wall
 library:
   source-dirs: lib
   dependencies:
@@ -24,6 +24,7 @@ library:
   - text
 executables:
   xmonad-config:
+    ghc-options: -threaded -rtsopts -with-rtsopts=-N
     main: xmonad.hs
     source-dirs: src
     dependencies:
@@ -31,7 +32,8 @@ executables:
     - xmonad
     - xmonad-contrib
     - containers
-  xmonadctl:
+  xmponadctl:
+    ghc-options: -threaded -rtsopts -with-rtsopts=-N
     main: xmonadctl.hs
     source-dirs: src
     dependencies:

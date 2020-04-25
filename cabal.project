@@ -1,4 +1,8 @@
-packages: xmonad-config.cabal
+packages: .
 package xmobar
   flags: +with_xft
-optimization: 2
+package xmonad
+  ghc-options: -j +RTS -A64m -RTS
+package xmonad-contrib
+  ghc-options: -j +RTS -A64m -RTS
+optimization: 1

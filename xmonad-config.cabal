@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: be25f6e5a1b66dad96bb28437da0ebbea9c89a884abfebbd2a7d1056e29ed3eb
+-- hash: 17cc0c6f899b4c4802c8932d3f19fd013232be0a5d75bb3e050ae0e3a1f540fc
 
 name:           xmonad-config
 version:        0.1.0.0
@@ -36,7 +36,7 @@ library
       Paths_xmonad_config
   hs-source-dirs:
       lib
-  ghc-options: -threaded -rtsopts -with-rtsopts=-N -Wall
+  ghc-options: -Wall
   build-depends:
       aeson
     , base
@@ -56,7 +56,7 @@ executable xmonad-config
       Paths_xmonad_config
   hs-source-dirs:
       src
-  ghc-options: -threaded -rtsopts -with-rtsopts=-N -Wall
+  ghc-options: -Wall -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       base
     , containers
@@ -65,13 +65,13 @@ executable xmonad-config
     , xmonad-contrib
   default-language: Haskell2010
 
-executable xmonadctl
+executable xmponadctl
   main-is: xmonadctl.hs
   other-modules:
       Paths_xmonad_config
   hs-source-dirs:
       src
-  ghc-options: -threaded -rtsopts -with-rtsopts=-N -Wall
+  ghc-options: -Wall -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       X11
     , base
