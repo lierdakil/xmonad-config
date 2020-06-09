@@ -3,6 +3,7 @@
 module Main where
 
 import Control.Monad
+import Control.Arrow ((>>>))
 import System.IO
 import Control.Exception
 import Control.Concurrent
@@ -277,8 +278,8 @@ main = do
   "M3-<F6>"                  ~~ spawn "toggle-touchpad"
   "<Print>"                  ~~ spawn "screenshot"
   "M3-S-<Backspace>"         ~~
-    lines <$> runProcessWithInput "pidof" ["deadd-notification-center"] [] >>=
-    safeSpawn "kill" . ("-USR1":)
+    runProcessWithInput "pidof" ["deadd-notification-center"] [] >>=
+    (lines >>> ("-USR1":) >>> safeSpawn "kill")
 
   keys =+ [("M3-" ++ k, lightsBrightness v) | (v,k) <- zip (map (floor . (*254)) [0.1,0.2..1 :: Float]) $ map show ([1..9 :: Int]++[0])]
   keys =+ [("M3-S-" ++ k, lightsCt v) | (v,k) <- zip [153,186,219,252,285,318,351,384,417,454] $ map show ([1..9 :: Int]++[0])]
