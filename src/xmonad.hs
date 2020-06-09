@@ -290,22 +290,20 @@ main = do
   "<XF86Launch7>"            ~~ spawn "bluetooth-connect"
   "<XF86Launch8>"            ~~ spawn "pamoveallto"
 
-  "C-<KP_Left>"      ~~ sendMessage (ExpandTowards L)
-  "C-<KP_Right>"     ~~ sendMessage (ExpandTowards R)
-  "C-<KP_Up>"        ~~ sendMessage (ExpandTowards U)
-  "C-<KP_Down>"      ~~ sendMessage (ExpandTowards D)
-  "M3-<KP_Left>"  ~~ sendMessage (ShrinkFrom R)
-  "M3-<KP_Right>" ~~ sendMessage (ShrinkFrom L)
-  "M3-<KP_Up>"    ~~ sendMessage (ShrinkFrom D)
-  "M3-<KP_Down>"  ~~ sendMessage (ShrinkFrom U)
-  "C-<KP_Home>"      ~~ mapM_ (sendMessage . ExpandTowards) [L, U]
-  "C-<KP_Page_Up>"   ~~ mapM_ (sendMessage . ExpandTowards) [R, U]
-  "C-<KP_Page_Down>" ~~ mapM_ (sendMessage . ExpandTowards) [R, D]
-  "C-<KP_End>"       ~~ mapM_ (sendMessage . ExpandTowards) [L, D]
-  "C-<KP_Begin>"     ~~ sendMessage Rotate
-  "C-<KP_Delete>"    ~~ sendMessage FocusParent
-  "C-<KP_Insert>"    ~~ sendMessage Equalize
-  "C-<KP_Enter>"     ~~ sendMessage Balance
+  "M3-<KP_Left>"      ~~ sendMessage (ExpandTowards L)
+  "M3-<KP_Right>"     ~~ sendMessage (ExpandTowards R)
+  "M3-<KP_Up>"        ~~ sendMessage (ExpandTowards U)
+  "M3-<KP_Down>"      ~~ sendMessage (ExpandTowards D)
+  "M3-<KP_Subtract>"  ~~ sendMessage RotateL
+  "M3-<KP_Add>"       ~~ sendMessage RotateR
+  "M3-<KP_Home>"      ~~ mapM_ (sendMessage . ExpandTowards) [L, U]
+  "M3-<KP_Page_Up>"   ~~ mapM_ (sendMessage . ExpandTowards) [R, U]
+  "M3-<KP_Page_Down>" ~~ mapM_ (sendMessage . ExpandTowards) [R, D]
+  "M3-<KP_End>"       ~~ mapM_ (sendMessage . ExpandTowards) [L, D]
+  "M3-<KP_Begin>"     ~~ sendMessage Rotate
+  "M3-<KP_Delete>"    ~~ sendMessage FocusParent
+  "M3-<KP_Insert>"    ~~ sendMessage Equalize
+  "M3-<KP_Enter>"     ~~ sendMessage Balance
   -- "M-s"            ~~ sendMessage Swap
   -- "M-C-n"         ~~ sendMessage SelectNode
   -- "M-S-n"          ~~ sendMessage MoveNode
