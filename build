@@ -3,5 +3,6 @@
 hpack
 cabal v2-install xmonad --overwrite-policy=always
 cabal v2-install xmobar --overwrite-policy=always
-cabal v2-install . --overwrite-policy=always
-[ -n "$1" ] && ln -sf $HOME/.local/bin/xmonad-config "$1"
+cabal v2-build .
+config="$(cabal v2-exec which xmonad-config)"
+[ -n "$1" ] && cp -f "$config" "$1"
