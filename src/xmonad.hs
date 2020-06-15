@@ -257,7 +257,7 @@ main = do
   "<XF86Sleep>"              ~~ spawn "loginctl lock-session"
   "<XF86AudioLowerVolume>"   ~~ spawn "pavol -2000"
   "<XF86AudioRaiseVolume>"   ~~ spawn "pavol +2000"
-  "<Pause>"                  ~~ spawn "apod.sh"
+  "<Pause>"                  ~~ spawn "apod.ts"
   "M-<XF86AudioMute>"        ~~ spawn "pamoveallto"
   "<XF86AudioMute>"          ~~ spawn "pavol mute"
   "<XF86AudioNext>"          ~~ spawn "mpc next"
