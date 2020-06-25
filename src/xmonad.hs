@@ -282,7 +282,7 @@ main = do
     (lines >>> ("-USR1":) >>> safeSpawn "kill")
 
   keys =+ [("M3-" ++ k, lightsBrightness v) | (v,k) <- zip (map (floor . (*254)) [0.1,0.2..1 :: Float]) $ map show ([1..9 :: Int]++[0])]
-  keys =+ [("M3-S-" ++ k, lightsCt v) | (v,k) <- zip [153,186,219,252,285,318,351,384,417,454] $ map show ([1..9 :: Int]++[0])]
+  keys =+ [("M3-S-" ++ k, lightsCt v) | (v,k) <- zip (reverse [153,186,219,252,285,318,351,384,417,454]) $ map show ([1..9 :: Int]++[0])]
 
   -- razer blackwidow macro keys
   -- "<XF86Tools>"              ~~ spawn "winusb -mjk"
