@@ -32,7 +32,7 @@ executables:
     - xmonad
     - xmonad-contrib
     - containers
-  xmponadctl:
+  xmonadctl:
     ghc-options: -threaded -rtsopts -with-rtsopts=-N
     main: xmonadctl.hs
     source-dirs: src
