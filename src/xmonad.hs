@@ -8,13 +8,14 @@ import System.IO
 import Control.Exception
 import Control.Concurrent
 import System.Exit
+import System.Clock
 import Data.Monoid (All(..))
 import qualified Data.Map as M
 
 import qualified XMonad as XM
 import qualified XMonad.StackSet as W
 import XMonad.Actions.FindEmptyWorkspace
-import XMonad.Actions.MouseGestures
+import XMonad.Actions.MouseGestures hiding (mouseGesture)
 import qualified XMonad.Actions.FlexibleManipulate as Flex
 import XMonad.Actions.Navigation2D
 import XMonad.Actions.WorkspaceNames
@@ -324,13 +325,15 @@ main = do
 
   let
     gestures = M.fromList [
-          ([], return $ spawn "toggle-scroll-emulation")
-        , ([D], windows . W.sink)
-        , ([R], (>> windows W.swapDown) . focus)
-        , ([L], (>> windows W.swapUp) . focus)
-        , ([L, D], (>> windows W.swapMaster) . focus)
-        , ([D, R], (>> kill) . focus)
+          (Click, run "toggle-scroll-emulation")
+        , (Hold, run "toggle-drag-lock")
+        , (Gesture [D], windows . W.sink)
+        , (Gesture [R], (>> windows W.swapDown) . focus)
+        , (Gesture [L], (>> windows W.swapUp) . focus)
+        , (Gesture [L, D], (>> windows W.swapMaster) . focus)
+        , (Gesture [D, R], (>> kill) . focus)
       ]
+    run = return . spawn
 
   mouseBindings =+
         [ ((mod3Mask, 1), \w -> focus w >> asks display >>= io . flip raiseWindow w >> Flex.mouseWindow Flex.discrete w)
@@ -338,3 +341,18 @@ main = do
         , ((mod3Mask, 4), modifyWindowOpacity 0x1fffffff)
         , ((mod3Mask, 5), modifyWindowOpacity (-0x1fffffff))
         ]
+
+data ClickOrGest = Click | Hold | Gesture [Direction2D]
+  deriving (Eq, Ord)
+
+mouseGesture :: M.Map ClickOrGest (Window -> X ()) -> Window -> X ()
+mouseGesture tbl win = do
+  (mov, end) <- mkCollect
+  start <- io $ getTime Monotonic
+  mouseGestureH (void . mov) $ end >>= \gest -> do
+    stop <- io $ getTime Monotonic
+    let gest' | null gest
+              = if click then Click else Hold
+              | otherwise = Gesture gest
+        click = (stop - start) <= fromNanoSecs (3 * 10^(8 :: Integer))
+    maybe (return ()) ($ win) $ M.lookup gest' tbl

@@ -1,10 +1,10 @@
 cabal-version: 1.12
 
--- This file has been generated from package.yaml by hpack version 0.31.1.
+-- This file has been generated from package.yaml by hpack version 0.33.0.
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 17cc0c6f899b4c4802c8932d3f19fd013232be0a5d75bb3e050ae0e3a1f540fc
+-- hash: e4001bdb401559dd6468bdd6e429cfdc10f70bc0df4f9c03a381eeaf313df08f
 
 name:           xmonad-config
 version:        0.1.0.0
@@ -59,6 +59,7 @@ executable xmonad-config
   ghc-options: -Wall -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       base
+    , clock
     , containers
     , xmonad
     , xmonad-config
