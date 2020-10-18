@@ -240,7 +240,7 @@ main = do
   "M-S-f" ~~ restart "/home/livid/bin/switchWM" True
 
   -- Restart xmonad
-  "M-q" ~~ spawn "xmonad --recompile; xmonad --restart"
+  "M-q" ~~ spawn "xmonad --restart"
 
   --mosaic
   --, ((modm, xK_a), sendMessage Taller)
