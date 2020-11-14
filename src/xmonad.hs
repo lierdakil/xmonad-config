@@ -70,8 +70,7 @@ main = do
   modifyLayout $ Layout . renamed [CutWordsLeft 1] . minimize . mouseResize . borderResize . smartBorders . avoidStruts
   let
     floats =
-      [ "baka-mplayer"
-      , "Gajim"
+      [ "Gajim"
       , "Screengrab"
       , "Display"
       ]
@@ -87,6 +86,7 @@ main = do
       [ isClass floats     --> doFloat
       , isClass ignored    --> doIgnore
       , isResource ignored --> doIgnore
+      , isClass ["jackmix"]  --> doShift hiddenWorkspaceTag
       ]
 
   handleEventHook =+ fullscreenEventHook
