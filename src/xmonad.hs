@@ -30,6 +30,7 @@ import XMonad.Layout.LayoutCombinators ((|||))
 import qualified XMonad.Layout.LayoutCombinators as LC
 import XMonad.Layout.Minimize
 import XMonad.Actions.GridSelect
+import XMonad.Actions.CycleWS
 import XMonad.Layout.MosaicAlt
 import XMonad.Layout.NoBorders
 import XMonad.Layout.Fullscreen (fullscreenSupport)
@@ -286,11 +287,11 @@ main = do
   keys =+ [("M3-S-" ++ k, lightsCt v) | (v,k) <- zip (reverse [153,186,219,252,285,318,351,384,417,454]) $ map show ([1..9 :: Int]++[0])]
 
   -- razer blackwidow macro keys
-  -- "<XF86Tools>"              ~~ spawn "winusb -mjk"
+  "<XF86Tools>"              ~~ spawn "toggle-second-monitor"
   -- "<XF86Launch5>"            ~~ spawn "true"
   -- "<XF86Launch6>"            ~~ spawn "true"
-  "<XF86Launch7>"            ~~ spawn "bluetooth-connect"
-  "<XF86Launch8>"            ~~ spawn "pamoveallto"
+  -- "<XF86Launch7>"            ~~ spawn "bluetooth-connect"
+  -- "<XF86Launch8>"            ~~ spawn "pamoveallto"
 
   "M3-<KP_Left>"      ~~ sendMessage (ExpandTowards L)
   "M3-<KP_Right>"     ~~ sendMessage (ExpandTowards R)
@@ -322,6 +323,9 @@ main = do
     name <- getWorkspaceNames <*> gets (W.currentTag . windowset)
     renameWorkspace myXPConfig{ fgColor="brown"
                               , defaultText = drop 1 . dropWhile (/=':') $ name}
+
+  "M-<Tab>" ~~ nextScreen
+  "M-S-<Tab>" ~~ shiftNextScreen
 
   let
     gestures = M.fromList [
