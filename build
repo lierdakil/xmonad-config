@@ -8,5 +8,6 @@ if [ -z "$1" ]; then
   cabal v2-install xmonad --overwrite-policy=always --install-method=copy
   cabal v2-install xmobar --overwrite-policy=always --install-method=copy
   ctl="$(cabal v2-exec which xmonadctl)"
+  ctl="$(cabal v2-exec which xmonadctl)"
   cp -f "$ctl" $HOME/.local/bin/
 fi
