@@ -14,22 +14,24 @@ import XMonad.Actions.CycleWS
 import XMonad.Util.NamedWindows
 import qualified XMonad.StackSet as W
 
-xmobarConfig :: Prime
-xmobarConfig = do
+xmobarConfig :: (WorkspaceId -> WindowSet -> WindowSet) -> Prime
+xmobarConfig view = do
   handleEventHook =+ serverModeEventHookCmd' $
     flip fmap (asks $ XM.workspaces . XM.config) $
       \wss ->
         ("next-layout",sendMessage NextLayout):
-        ("next-ws", doTo Next NonEmptyWS getSortByIndex' (windows . W.greedyView)):
-        ("prev-ws", doTo Prev NonEmptyWS getSortByIndex' (windows . W.greedyView)):
+        ("next-ws", doTo Next NonEmptyWS getSortByIndex' (windows . view)):
+        ("prev-ws", doTo Prev NonEmptyWS getSortByIndex' (windows . view)):
         ("show-title", withNamedWindow $ popup . show):
-        [("view" ++ i, windows $ W.view i) | i <- wss]
-  logHook =+ workspaceNamesPP myPP >>= dynamicLogString >>= xmonadPropLog
+        [("view" ++ i, windows $ view i) | i <- wss]
+  logHook =+ do
+    sid <- W.screen . W.current <$> gets windowset
+    workspaceNamesPP (myPP sid) >>= dynamicLogString >>= xmonadPropLog
 
-myPP :: PP
-myPP    = xmobarPP {
+myPP :: ScreenId -> PP
+myPP sid = xmobarPP {
       ppCurrent = scrollableWs . xmobarColor "white" "#2b4f98" . pad . xmobarEscape
-    , ppVisible = scrollableWs . xmobarColor "black" "#999999" . pad . clickableWs
+    , ppVisible = scrollableWs . xmobarColor "black" (if sid == 0 then "#ac9999" else "#9999dd") . pad . clickableWs
     , ppUrgent  = scrollableWs . xmobarColor "red" "yellow" . pad . clickableWs
     , ppHidden  = scrollableWs . xmobarColor "black" "#cccccc" . pad . clickableWs
     , ppLayout =

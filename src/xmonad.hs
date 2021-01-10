@@ -14,6 +14,7 @@ import qualified Data.Map as M
 
 import qualified XMonad as XM
 import qualified XMonad.StackSet as W
+import qualified XMonad.Actions.OnScreen as WW
 import XMonad.Actions.FindEmptyWorkspace
 import XMonad.Actions.MouseGestures hiding (mouseGesture)
 import qualified XMonad.Actions.FlexibleManipulate as Flex
@@ -51,6 +52,8 @@ import Local.Popup
 import Local.Xmobar
 
 import Local.FixEWMH
+
+view = WW.viewOnScreen 0
 
 main :: IO ()
 main = do
@@ -107,19 +110,19 @@ main = do
   -- startupHook =+ setWMName "LG3D"
 
   keepDocksAbove
-  xmobarConfig
+  xmobarConfig view
   popupConfig
 
   -- workspaces
   withWorkspaces $ do
     wsKeys =: map show [1..9 :: Int]
-    wsActions =+ [("M1-", windows . W.greedyView)]
+    wsActions =+ [("M1-", windows . view)]
     wsActions =+ [("C-M1-", swapWithCurrent)]
     wsActions =+ [("S-M1-", windows . W.shift)]
     -- wsSetName 1 "mail"
 
   workspaces =+ [hiddenWorkspaceTag]
-  "M-<Backspace>" ~~ windows . W.greedyView $ hiddenWorkspaceTag
+  "M-<Backspace>" ~~ windows . view $ hiddenWorkspaceTag
   "M-S-<Backspace>" ~~ windows . W.shift $ hiddenWorkspaceTag
 
   -- M = M4 = RALT
@@ -288,7 +291,7 @@ main = do
 
   -- razer blackwidow macro keys
   "<XF86Tools>"              ~~ spawn "toggle-second-monitor"
-  -- "<XF86Launch5>"            ~~ spawn "true"
+  "<XF86Launch5>"            ~~ swapNextScreen
   -- "<XF86Launch6>"            ~~ spawn "true"
   -- "<XF86Launch7>"            ~~ spawn "bluetooth-connect"
   -- "<XF86Launch8>"            ~~ spawn "pamoveallto"
