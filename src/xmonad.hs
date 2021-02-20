@@ -294,7 +294,7 @@ main = do
   -- razer blackwidow macro keys
   "<XF86Tools>"              ~~ spawn "toggle-second-monitor"
   "<XF86Launch5>"            ~~ swapNextScreen
-  -- "<XF86Launch6>"            ~~ spawn "true"
+  "<XF86Launch6>"            ~~ spawn "toggle-primary-monitor"
   -- "<XF86Launch7>"            ~~ spawn "bluetooth-connect"
   -- "<XF86Launch8>"            ~~ spawn "pamoveallto"
 
