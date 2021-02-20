@@ -53,13 +53,14 @@ import Local.Xmobar
 
 import Local.FixEWMH
 
+view :: WorkspaceId -> WindowSet -> WindowSet
 view = WW.viewOnScreen 0
 
 main :: IO ()
 main = do
  replace
  xmonad $ do
-  startWith def{XM.keys = const def}
+  startWith def{XM.keys = const mempty}
 
   terminal           =: "alacritty"
   focusFollowsMouse  =: False
@@ -116,6 +117,7 @@ main = do
   -- workspaces
   withWorkspaces $ do
     wsKeys =: map show [1..9 :: Int]
+    wsActions =: []
     wsActions =+ [("M1-", windows . view)]
     wsActions =+ [("C-M1-", swapWithCurrent)]
     wsActions =+ [("S-M1-", windows . W.shift)]
