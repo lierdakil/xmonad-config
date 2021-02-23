@@ -347,8 +347,8 @@ main = do
   mouseBindings =+
         [ ((mod3Mask, 1), \w -> focus w >> asks display >>= io . flip raiseWindow w >> Flex.mouseWindow Flex.discrete w)
         , ((0, 12), mouseGesture gestures)
-        , ((mod3Mask, 4), modifyWindowOpacity 0x1fffffff)
-        , ((mod3Mask, 5), modifyWindowOpacity (-0x1fffffff))
+        , ((mod3Mask, 5), modifyWindowOpacity 0x1fffffff)
+        , ((mod3Mask, 4), modifyWindowOpacity (-0x1fffffff))
         ]
 
 data ClickOrGest = Click | Hold | Gesture [Direction2D]
