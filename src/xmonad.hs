@@ -42,6 +42,7 @@ import XMonad.Prompt.Window
 import XMonad.Prompt.XMonad
 import XMonad.Util.Replace
 import XMonad.Util.Run
+import XMonad.Util.Paste
 
 import XMonad.Config.Prime.Monadic hiding ((|||))
 
@@ -122,6 +123,9 @@ main = do
     wsActions =+ [("C-M1-", swapWithCurrent)]
     wsActions =+ [("S-M1-", windows . W.shift)]
     -- wsSetName 1 "mail"
+
+  mapM_ (\(n, k) -> "M-" <> show n  ~~ sendKey mod1Mask k)
+    $ zip [1..(9 :: Int)] [xK_1 .. xK_9]
 
   workspaces =+ [hiddenWorkspaceTag]
   "M-<Backspace>" ~~ windows . view $ hiddenWorkspaceTag
