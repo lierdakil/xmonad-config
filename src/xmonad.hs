@@ -43,6 +43,7 @@ import XMonad.Prompt.XMonad
 import XMonad.Util.Replace
 import XMonad.Util.Run
 import XMonad.Util.Paste
+import Data.Bits ((.&.))
 
 import XMonad.Config.Prime.Monadic hiding ((|||))
 
@@ -153,8 +154,6 @@ main = do
                               , height=32}
     myXPConfigTerm = myXPConfig {fgColor="green"}
   "M1-0" ~~ viewEmptyWorkspace
-  "M1-S--" ~~ windowPrompt myXPConfig Goto allWindows
-  "M1-S-=" ~~ windowPrompt myXPConfig Bring allWindows
   "M1-S-0" ~~ tagToEmptyWorkspace
 
   -- [((controlMask .|. mod1Mask, k), spawn $ "chvt "++show (i::Int))
@@ -171,7 +170,34 @@ main = do
     term <- asks (XM.terminal . XM.config)
     prompt (term ++ " -e") myXPConfigTerm
 
-  "M3-p" ~~ spawnSelected def [ "spacefm"
+  let gs_config1 = def { gs_navigate = navigate }
+      gs_config2 = def { gs_navigate = navigate }
+      navigate = makeXEventhandler $ \(sym, _, _) -> navigate' sym
+      navigate' sym
+        | sym == xK_Escape = cancel
+        | sym == xK_Return = select
+        | sym == xK_slash  = substringSearch' navigate
+        | sym == xK_Left   = move (-1,0) >> navigate
+        | sym == xK_Right  = move (1,0) >> navigate
+        | sym == xK_Down   = move (0,1) >> navigate
+        | sym == xK_Up     = move (0,-1) >> navigate
+        | sym == xK_Tab    = moveNext >> navigate
+        | sym == 0xfe20 {- ISO_LEFT_TAB -} = movePrev >> navigate
+        | otherwise = navigate
+      substringSearch' returnNavigation =
+        let searchKeyMap (sym, str, _)
+              | sym == xK_Escape    = transformSearchString (const "") >> returnNavigation
+              | sym == xK_Return    = returnNavigation
+              | sym == xK_BackSpace = transformSearchString (\s -> if (s == "") then "" else init s) >> me
+              | otherwise           = transformSearchString (++ str) >> me
+            me = makeXEventhandler searchKeyMap
+        in me
+
+  "M1-S--" ~~ goToSelected gs_config1
+  "M1-S-=" ~~ bringSelected gs_config1
+
+  "M3-p" ~~ spawnSelected gs_config2
+                              [ "spacefm"
                               , "google-chrome-stable"
                               , "seahorse"
                               , "urxvt"
@@ -199,9 +225,6 @@ main = do
   -- Move focus to the previous window
   "M-k" ~~ windows W.focusUp
   "M1-S-<Tab>" ~~ windows W.focusUp
-
-  -- Grid select
-  "C-M1-<Tab>" ~~ goToSelected def
 
   -- Move focus to the master window
   "M-m" ~~ windows W.focusMaster
