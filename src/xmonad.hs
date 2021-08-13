@@ -38,12 +38,10 @@ import XMonad.Layout.Fullscreen (fullscreenSupport)
 import XMonad.Layout.Renamed
 import XMonad.Prompt
 import XMonad.Prompt.Shell
-import XMonad.Prompt.Window
 import XMonad.Prompt.XMonad
 import XMonad.Util.Replace
 import XMonad.Util.Run
 import XMonad.Util.Paste
-import Data.Bits ((.&.))
 
 import XMonad.Config.Prime.Monadic hiding ((|||))
 
@@ -116,14 +114,17 @@ main = do
   xmobarConfig view
   popupConfig
 
-  -- workspaces
-  withWorkspaces $ do
-    wsKeys =: map show [1..9 :: Int]
-    wsActions =: []
-    wsActions =+ [("M1-", windows . view)]
-    wsActions =+ [("C-M1-", swapWithCurrent)]
-    wsActions =+ [("S-M1-", windows . W.shift)]
-    -- wsSetName 1 "mail"
+  workspaces =: []
+
+  forM_ (zip3 [1..(9 :: Int)] ['q','w','e','r','t','y','u','i','o','p'] ['a','s','d','f','g','h','j','k','l']) $ \(i,j,k) -> do
+    let si = show i
+    workspaces =+ [si]
+    "M1-" <> si ~~ windows (view si)
+    "M5-" <> si ~~ windows (view si)
+    "C-M1-" <> si ~~ swapWithCurrent si
+    "M5-" <> [j] ~~ swapWithCurrent si
+    "S-M1-" <> si ~~ windows (W.shift si)
+    "M5-" <> [k] ~~ windows (W.shift si)
 
   mapM_ (\(n, k) -> "M-" <> show n  ~~ sendKey mod1Mask k)
     $ zip [1..(9 :: Int)] [xK_1 .. xK_9]
@@ -131,6 +132,7 @@ main = do
   workspaces =+ [hiddenWorkspaceTag]
   "M-<Backspace>" ~~ windows . view $ hiddenWorkspaceTag
   "M-S-<Backspace>" ~~ windows . W.shift $ hiddenWorkspaceTag
+  "M5--" ~~ windows . view $ hiddenWorkspaceTag
 
   -- M = M4 = RALT
   -- M1 = LALT
@@ -154,13 +156,16 @@ main = do
                               , height=32}
     myXPConfigTerm = myXPConfig {fgColor="green"}
   "M1-0" ~~ viewEmptyWorkspace
+  "M5-0" ~~ viewEmptyWorkspace
   "M1-S-0" ~~ tagToEmptyWorkspace
+  "M5-;" ~~ tagToEmptyWorkspace
 
   -- [((controlMask .|. mod1Mask, k), spawn $ "chvt "++show (i::Int))
   --     | (i,k) <- zip [1..12] [xK_F1..xK_F12] ]
   -- ++
 
   "M-S-<Return>" ~~ spawn =<< asks (XM.terminal . XM.config)
+  "M5-<Return>" ~~ spawn =<< asks (XM.terminal . XM.config)
 
   -- launch program
   "M-p" ~~ shellPrompt myXPConfig
@@ -170,33 +175,12 @@ main = do
     term <- asks (XM.terminal . XM.config)
     prompt (term ++ " -e") myXPConfigTerm
 
-  let gs_config1 = def { gs_navigate = navigate }
-      gs_config2 = def { gs_navigate = navigate }
-      navigate = makeXEventhandler $ \(sym, _, _) -> navigate' sym
-      navigate' sym
-        | sym == xK_Escape = cancel
-        | sym == xK_Return = select
-        | sym == xK_slash  = substringSearch' navigate
-        | sym == xK_Left   = move (-1,0) >> navigate
-        | sym == xK_Right  = move (1,0) >> navigate
-        | sym == xK_Down   = move (0,1) >> navigate
-        | sym == xK_Up     = move (0,-1) >> navigate
-        | sym == xK_Tab    = moveNext >> navigate
-        | sym == 0xfe20 {- ISO_LEFT_TAB -} = movePrev >> navigate
-        | otherwise = navigate
-      substringSearch' returnNavigation =
-        let searchKeyMap (sym, str, _)
-              | sym == xK_Escape    = transformSearchString (const "") >> returnNavigation
-              | sym == xK_Return    = returnNavigation
-              | sym == xK_BackSpace = transformSearchString (\s -> if (s == "") then "" else init s) >> me
-              | otherwise           = transformSearchString (++ str) >> me
-            me = makeXEventhandler searchKeyMap
-        in me
+  "M1-S--" ~~ goToSelected def
+  "M5-\\" ~~ goToSelected def
+  "M1-S-=" ~~ bringSelected def
+  "M5-'" ~~ bringSelected def
 
-  "M1-S--" ~~ goToSelected gs_config1
-  "M1-S-=" ~~ bringSelected gs_config1
-
-  "M3-p" ~~ spawnSelected gs_config2
+  "M3-p" ~~ spawnSelected def
                               [ "spacefm"
                               , "google-chrome-stable"
                               , "seahorse"
@@ -209,9 +193,11 @@ main = do
 
   -- close focused window
   "M1-S-c" ~~ kill
+  "M5-c" ~~ kill
 
   -- Rotate through the available layout algorithms
   "M-<Space>" ~~ sendMessage NextLayout
+  "M5-<Space>" ~~ sendMessage NextLayout
 
   -- Resize viewed windows to the correct size
   "M-n" ~~ refresh
@@ -221,9 +207,11 @@ main = do
 
   -- Move focus to the next window
   "M-j" ~~ windows W.focusDown
+  "M5-," ~~ windows W.focusDown
 
   -- Move focus to the previous window
   "M-k" ~~ windows W.focusUp
+  "M5-." ~~ windows W.focusUp
   "M1-S-<Tab>" ~~ windows W.focusUp
 
   -- Move focus to the master window
@@ -322,7 +310,8 @@ main = do
   "<XF86Tools>"              ~~ spawn "toggle-second-monitor"
   "<XF86Launch5>"            ~~ swapNextScreen
   "<XF86Launch6>"            ~~ spawn "toggle-primary-monitor"
-  -- "<XF86Launch7>"            ~~ spawn "bluetooth-connect"
+  "<XF86Launch7>"            ~~ spawn "bash $HOME/.config/X/start.sh keyboard mouse"
+  "M-<F1>"                   ~~ spawn "edit-kin-map"
   -- "<XF86Launch8>"            ~~ spawn "pamoveallto"
 
   "M3-<KP_Left>"      ~~ sendMessage (ExpandTowards L)
@@ -348,7 +337,16 @@ main = do
   apply $ exc . navigation2DP def
            ("<Up>", "<Left>", "<Down>", "<Right>")
            [("M3-",   windowGo  ),
-            ("M3-S-", windowSwap)]
+            ("M3-S-", windowSwap),
+            ("M5-",   windowSwap)]
+           False
+  apply $ exc . navigation2DP def
+           ("e", "s", "d", "f")
+           [("M3-",     windowGo  ),
+            ("M5-C-",   windowGo  ),
+            ("M3-S-",   windowSwap),
+            ("M3-M5-",  windowSwap),
+            ("M5-S-",   windowSwap)]
            False
 
   "M1-r" ~~ do
