@@ -326,6 +326,7 @@ main = do
   "M3-<KP_Page_Down>" ~~ mapM_ (sendMessage . ExpandTowards) [R, D]
   "M3-<KP_End>"       ~~ mapM_ (sendMessage . ExpandTowards) [L, D]
   "M3-<KP_Begin>"     ~~ sendMessage Rotate
+  "M3-k"              ~~ sendMessage Rotate
   "M3-<KP_Delete>"    ~~ sendMessage FocusParent
   "M3-<KP_Insert>"    ~~ sendMessage Equalize
   "M3-<KP_Enter>"     ~~ sendMessage Balance
