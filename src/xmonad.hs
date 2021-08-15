@@ -116,15 +116,16 @@ main = do
 
   workspaces =: []
 
-  forM_ (zip3 [1..(9 :: Int)] ['q','w','e','r','t','y','u','i','o','p'] ['a','s','d','f','g','h','j','k','l']) $ \(i,j,k) -> do
+  forM_ (zip [1..(9 :: Int)] $ zip "qwertyuiop" "asdfghjkl") $ \(i,(j,k)) -> do
     let si = show i
     workspaces =+ [si]
     "M1-" <> si ~~ windows (view si)
-    "M5-" <> si ~~ windows (view si)
     "C-M1-" <> si ~~ swapWithCurrent si
-    "M5-" <> [j] ~~ swapWithCurrent si
     "S-M1-" <> si ~~ windows (W.shift si)
+    "M5-" <> si ~~ windows (view si)
+    "M5-" <> [j] ~~ swapWithCurrent si
     "M5-" <> [k] ~~ windows (W.shift si)
+    "M5-S-" <> si ~~ windows (view si)
 
   mapM_ (\(n, k) -> "M-" <> show n  ~~ sendKey mod1Mask k)
     $ zip [1..(9 :: Int)] [xK_1 .. xK_9]
@@ -132,7 +133,7 @@ main = do
   workspaces =+ [hiddenWorkspaceTag]
   "M-<Backspace>" ~~ windows . view $ hiddenWorkspaceTag
   "M-S-<Backspace>" ~~ windows . W.shift $ hiddenWorkspaceTag
-  "M5--" ~~ windows . view $ hiddenWorkspaceTag
+  "M5-\\" ~~ windows . view $ hiddenWorkspaceTag
 
   -- M = M4 = RALT
   -- M1 = LALT
@@ -176,7 +177,7 @@ main = do
     prompt (term ++ " -e") myXPConfigTerm
 
   "M1-S--" ~~ goToSelected def
-  "M5-\\" ~~ goToSelected def
+  "M5--" ~~ goToSelected def
   "M1-S-=" ~~ bringSelected def
   "M5-'" ~~ bringSelected def
 
@@ -310,8 +311,9 @@ main = do
   "<XF86Tools>"              ~~ spawn "toggle-second-monitor"
   "<XF86Launch5>"            ~~ swapNextScreen
   "<XF86Launch6>"            ~~ spawn "toggle-primary-monitor"
-  "<XF86Launch7>"            ~~ spawn "bash $HOME/.config/X/start.sh keyboard mouse"
+  "<XF86Launch7>"            ~~ spawn "systemctl --user restart kmonad"
   "M-<F1>"                   ~~ spawn "edit-kin-map"
+  rawkeys =+ [((0, xK_F35), spawn "xkblayout-state set +1")]
   -- "<XF86Launch8>"            ~~ spawn "pamoveallto"
 
   "M3-<KP_Left>"      ~~ sendMessage (ExpandTowards L)

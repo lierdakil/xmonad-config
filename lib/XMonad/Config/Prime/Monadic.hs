@@ -65,6 +65,7 @@ SummableClass(..),
 -- * Attributes you can add to or remove from
 -- $removables
 keys,
+rawkeys,
 mouseBindings,
 RemovableClass(..),
 
@@ -135,7 +136,9 @@ import           XMonad.Util.EZConfig                   (additionalKeysP,
                                                          additionalMouseBindings,
                                                          checkKeymap,
                                                          removeKeysP,
-                                                         removeMouseBindings)
+                                                         removeMouseBindings,
+                                                         additionalKeys,
+                                                         removeKeys)
 
 -- $start_here
 -- To start with, create a @~\/.xmonad\/xmonad.hs@ that looks like this:
@@ -369,13 +372,13 @@ class RemovableClass r y | r -> y where
   (=-) :: r c -> y -> Arr c
   infixr 0 =-
 
-data Keys c = Keys { kAdd    :: [(String, X ())] -> c -> c,
-                     kRemove :: [String] -> c -> c }
+data Keys p c = Keys { kAdd    :: [(p, X ())] -> c -> c,
+                       kRemove :: [p] -> c -> c }
 
-instance SummableClass Keys [(String, X ())] where
+instance SummableClass (Keys p) [(p, X ())] where
   Keys { kAdd = a } =+ newKeys = modify $ a newKeys
 
-instance RemovableClass Keys [String] where
+instance RemovableClass (Keys p) [p] where
   Keys { kRemove = r } =- sadKeys = modify $ r sadKeys
 
 -- | Key bindings to 'X' actions. Default: see @`man xmonad`@. 'keys'
@@ -385,7 +388,7 @@ instance RemovableClass Keys [String] where
 --
 -- >   keys =- ["M-S-c"]
 -- >   keys =+ [("M-M1-x", kill)]
-keys :: Keys (XConfig l)
+keys :: Keys String (XConfig l)
 keys = Keys {
   -- Note that since checkKeymap happens on newKeys, it doesn't check for
   -- duplicates between repeated applications. Probably OK. (Especially since
@@ -393,6 +396,16 @@ keys = Keys {
   -- reference cycle here. Yay!
   kAdd = \newKeys c -> (c `additionalKeysP` newKeys) { X.startupHook = (>>) (X.startupHook c) (checkKeymap c newKeys) },
   kRemove = flip removeKeysP
+}
+
+rawkeys :: Keys (KeyMask,KeySym) (XConfig l)
+rawkeys = Keys {
+  -- Note that since checkKeymap happens on newKeys, it doesn't check for
+  -- duplicates between repeated applications. Probably OK. (Especially since
+  -- overriding defaults is a common behavior.) Also note that there's no
+  -- reference cycle here. Yay!
+  kAdd = \newKeys c -> (c `additionalKeys` newKeys),
+  kRemove = flip removeKeys
 }
 
 data MouseBindings c = MouseBindings { mAdd    :: [((ButtonMask, Button), Window -> X ())] -> c -> c,
