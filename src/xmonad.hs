@@ -344,10 +344,7 @@ main = do
            False
   apply $ exc . navigation2DP def
            ("e", "s", "d", "f")
-           [("M3-",     windowGo  ),
-            ("M5-C-",   windowGo  ),
-            ("M3-S-",   windowSwap),
-            ("M3-M5-",  windowSwap),
+           [("M5-"  ,   windowGo  ),
             ("M5-S-",   windowSwap)]
            False
 
