@@ -313,7 +313,6 @@ main = do
   "<XF86Launch6>"            ~~ spawn "toggle-primary-monitor"
   "<XF86Launch7>"            ~~ spawn "systemctl --user restart kmonad"
   "M-<F1>"                   ~~ spawn "edit-kin-map"
-  rawkeys =+ [((0, xK_F35), spawn "xkblayout-state set +1")]
   -- "<XF86Launch8>"            ~~ spawn "pamoveallto"
 
   "M3-<KP_Left>"      ~~ sendMessage (ExpandTowards L)
