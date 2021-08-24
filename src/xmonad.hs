@@ -116,16 +116,17 @@ main = do
 
   workspaces =: []
 
-  forM_ (zip [1..(9 :: Int)] $ zip "qwertyuiop" "asdfghjkl") $ \(i,(j,k)) -> do
+  forM_ (zip [1..(9 :: Int)] $ zip3 [0x21, 0x40, 0x23, 0x24, 0x25, 0x5e, 0x26, 0x2a, 0x28, 0x29] "qwertyuiop" "asdfghjkl") $ \(i,(c,j,k)) -> do
     let si = show i
     workspaces =+ [si]
     "M1-" <> si ~~ windows (view si)
     "C-M1-" <> si ~~ swapWithCurrent si
     "S-M1-" <> si ~~ windows (W.shift si)
-    "M5-" <> si ~~ windows (view si)
-    "M5-" <> [j] ~~ swapWithCurrent si
-    "M5-" <> [k] ~~ windows (W.shift si)
-    "M5-S-" <> si ~~ windows (view si)
+    rawkeys =+ [((mod5Mask, c), swapWithCurrent si)]
+    "M5-" <> si ~~ swapWithCurrent si
+    "M5-S-" <> si ~~ swapWithCurrent si
+    "M5-" <> [j] ~~ windows (W.shift si)
+    "M5-" <> [k] ~~ windows (view si)
 
   mapM_ (\(n, k) -> "M-" <> show n  ~~ sendKey mod1Mask k)
     $ zip [1..(9 :: Int)] [xK_1 .. xK_9]
@@ -326,7 +327,7 @@ main = do
   "M3-<KP_Page_Down>" ~~ mapM_ (sendMessage . ExpandTowards) [R, D]
   "M3-<KP_End>"       ~~ mapM_ (sendMessage . ExpandTowards) [L, D]
   "M3-<KP_Begin>"     ~~ sendMessage Rotate
-  "M5-r"              ~~ sendMessage Rotate
+  "M3-K"              ~~ sendMessage Rotate
   "M3-<KP_Delete>"    ~~ sendMessage FocusParent
   "M3-<KP_Insert>"    ~~ sendMessage Equalize
   "M3-<KP_Enter>"     ~~ sendMessage Balance
@@ -340,12 +341,8 @@ main = do
            ("<Up>", "<Left>", "<Down>", "<Right>")
            [("M3-",   windowGo  ),
             ("M3-S-", windowSwap),
-            ("M5-",   windowSwap)]
-           False
-  apply $ exc . navigation2DP def
-           ("e", "s", "d", "f")
-           [("M5-"  ,   windowGo  ),
-            ("M5-S-",   windowSwap)]
+            ("M5-",   windowGo  ),
+            ("M5-S-", windowSwap)]
            False
 
   "M1-r" ~~ do
