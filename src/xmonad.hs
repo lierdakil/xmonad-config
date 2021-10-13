@@ -116,7 +116,11 @@ main = do
 
   workspaces =: []
 
-  forM_ (zip [1..(9 :: Int)] $ zip3 [0x21, 0x40, 0x23, 0x24, 0x25, 0x5e, 0x26, 0x2a, 0x28, 0x29] "qwertyuiop" "asdfghjkl") $ \(i,(c,j,k)) -> do
+  -- Top keys row, usually it's [1..9, 0] but in my case it's these
+  -- because of "weird" xkb layout.
+  let topkeys = [0x21, 0x40, 0x23, 0x24, 0x25, 0x5e, 0x26, 0x2a, 0x28, 0x29]
+
+  forM_ (zip [1..(9 :: Int)] $ zip3 topkeys "qwertyuiop" "asdfghjkl") $ \(i,(c,j,k)) -> do
     let si = show i
     workspaces =+ [si]
     "M1-" <> si ~~ windows (view si)
@@ -248,7 +252,7 @@ main = do
     \case "MosaicAlt" -> withFocused (sendMessage . tallWindowAlt)
           _ -> sendMessage (IncMasterN 1)
 
-  -- Deincrement the number of windows in the master area
+  -- Decrement the number of windows in the master area
   "M-," ~~ layout' $
     \case "MosaicAlt" -> withFocused (sendMessage . tallWindowAlt)
           _ -> sendMessage (IncMasterN (-1))
@@ -305,8 +309,10 @@ main = do
     runProcessWithInput "pidof" ["deadd-notification-center"] [] >>=
     (lines >>> ("-USR1":) >>> safeSpawn "kill")
 
-  keys =+ [("M3-" ++ k, lightsBrightness v) | (v,k) <- zip (map (floor . (*254)) [0.1,0.2..1 :: Float]) $ map show ([1..9 :: Int]++[0])]
-  keys =+ [("M3-S-" ++ k, lightsCt v) | (v,k) <- zip (reverse [153,186,219,252,285,318,351,384,417,454]) $ map show ([1..9 :: Int]++[0])]
+  rawkeys =+ [((mod3Mask, k), lightsBrightness v)
+    | (v,k) <- zip (map (floor . (*254)) [0.1,0.2..1 :: Float]) topkeys]
+  rawkeys =+ [((mod3Mask .|. shiftMask, k), lightsCt v)
+    | (v,k) <- zip (reverse [153,186,219,252,285,318,351,384,417,454]) topkeys]
 
   -- razer blackwidow macro keys
   "<XF86Tools>"              ~~ spawn "toggle-second-monitor"
