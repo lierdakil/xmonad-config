@@ -319,6 +319,7 @@ main = do
   "<XF86Launch5>"            ~~ swapNextScreen
   "<XF86Launch6>"            ~~ spawn "toggle-primary-monitor"
   "<XF86Launch7>"            ~~ spawn "systemctl --user restart kmonad"
+  "<XF86Launch8>"            ~~ spawn "toggle-third-monitor"
   "M-<F1>"                   ~~ spawn "edit-kin-map"
   -- "<XF86Launch8>"            ~~ spawn "pamoveallto"
 
