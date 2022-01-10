@@ -44,7 +44,6 @@ import           Data.List                  (intercalate)
 import           Data.String
 import           Network.Connection         (TLSSettings (..))
 import           Network.HTTP.Conduit
-import           Data.Monoid ((<>))
 
 class DurationAction a where
   withDuration :: Float -> a -> a

@@ -11,8 +11,6 @@ import qualified Data.ByteString.Char8      as B
 import qualified Data.ByteString.Lazy.Char8 as LB
 import           Network.HTTP.Simple
 import           Network.HTTP.Conduit (Request(..), RequestBody(..), Response(..))
-import           Data.Monoid ((<>))
-import           Data.Text (Text)
 
 
 sendRequest :: String -> (String, B.ByteString) -> LB.ByteString -> IO String
@@ -34,7 +32,7 @@ instance JSON.ToJSON AlertValue where
   toJSON AlertNone = "none"
   toJSON AlertSelect = "select"
 
-jobj :: JSON.ToJSON a => Text -> a -> JSON.Value
+jobj :: JSON.ToJSON a => JSON.Key -> a -> JSON.Value
 jobj n v = JSON.object [ n .= JSON.toJSON v ]
 
 instance JSON.ToJSON Parameter where

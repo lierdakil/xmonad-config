@@ -187,7 +187,7 @@ main = do
   "M5-'" ~~ bringSelected def
 
   "M3-p" ~~ spawnSelected def
-                              [ "spacefm"
+                              [ "thunar"
                               , "google-chrome-stable"
                               , "seahorse"
                               , "urxvt"
