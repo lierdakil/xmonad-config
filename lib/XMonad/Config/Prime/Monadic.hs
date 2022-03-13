@@ -115,30 +115,22 @@ Arr,
 -- $troubleshooting
 ) where
 
--- import           Control.Applicative                    ((<$>))
-import           Control.Monad.State
-import           Data.Monoid                            (All)
-import           Prelude                                hiding (mod)
+import Control.Monad.State
+import Data.Monoid (All)
+import Prelude hiding (mod)
 
 -- XMonad core
 
-import           XMonad                                 hiding (XConfig (..),
-                                                         get, modify, put,
-                                                         xmonad, launch)
-import           XMonad                                 (XConfig (XConfig))
-import qualified XMonad                                 as X (XConfig (..),
-                                                              xmonad, launch)
-import qualified XMonad.StackSet                        as W
+import XMonad hiding (XConfig(..), get, launch, modify, put, xmonad)
+import XMonad (XConfig(XConfig))
+import qualified XMonad as X (XConfig(..), launch, xmonad)
+import qualified XMonad.StackSet as W
 
 -- xmonad-contrib
 
-import           XMonad.Util.EZConfig                   (additionalKeysP,
-                                                         additionalMouseBindings,
-                                                         checkKeymap,
-                                                         removeKeysP,
-                                                         removeMouseBindings,
-                                                         additionalKeys,
-                                                         removeKeys)
+import XMonad.Util.EZConfig
+  (additionalKeys, additionalKeysP, additionalMouseBindings, checkKeymap, removeKeys, removeKeysP,
+  removeMouseBindings)
 
 -- $start_here
 -- To start with, create a @~\/.xmonad\/xmonad.hs@ that looks like this:
@@ -195,10 +187,11 @@ xmonad prime = xmonad' =<< execStateT prime (exc def)
   where xmonad' :: XConfig Layout -> IO ()
         xmonad' cf@XConfig{ X.layoutHook = Layout l } = X.xmonad cf{ X.layoutHook = l }
 
-launch :: Prime -> IO ()
-launch prime = launch' =<< execStateT prime (exc def)
+launch :: Directories -> Prime -> IO ()
+launch dirs prime = launch' =<< execStateT prime (exc def)
   where launch' :: XConfig Layout -> IO ()
-        launch' cf@XConfig{ X.layoutHook = Layout l } = X.launch cf{ X.layoutHook = l }
+        launch' cf@XConfig{ X.layoutHook = Layout l } =
+          X.launch cf{ X.layoutHook = l } dirs
 
 -- | This doesn't modify the config in any way. It's just here for your initial
 -- config because Haskell doesn't allow empty do-blocks. Feel free to delete it
@@ -404,7 +397,7 @@ rawkeys = Keys {
   -- duplicates between repeated applications. Probably OK. (Especially since
   -- overriding defaults is a common behavior.) Also note that there's no
   -- reference cycle here. Yay!
-  kAdd = \newKeys c -> (c `additionalKeys` newKeys),
+  kAdd = flip additionalKeys,
   kRemove = flip removeKeys
 }
 

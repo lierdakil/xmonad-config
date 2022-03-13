@@ -2,53 +2,55 @@
 
 module Main where
 
-import Control.Monad
 import Control.Arrow ((>>>))
-import System.IO
-import Control.Exception
 import Control.Concurrent
-import System.Exit
-import System.Clock
-import Data.Monoid (All(..))
+import Control.Exception
+import Control.Monad
 import qualified Data.Map as M
+import Data.Maybe (fromMaybe)
+import Data.Monoid (All(..))
+import System.Clock
+import System.Exit
+import System.IO
 
 import qualified XMonad as XM
-import qualified XMonad.StackSet as W
-import qualified XMonad.Actions.OnScreen as WW
+import XMonad.Actions.CycleWS
 import XMonad.Actions.FindEmptyWorkspace
-import XMonad.Actions.MouseGestures hiding (mouseGesture)
 import qualified XMonad.Actions.FlexibleManipulate as Flex
+import XMonad.Actions.GridSelect
+import XMonad.Actions.Minimize
+import XMonad.Actions.MouseGestures hiding (mouseGesture)
+import XMonad.Actions.MouseResize
 import XMonad.Actions.Navigation2D
+import qualified XMonad.Actions.OnScreen as WW
 import XMonad.Actions.WorkspaceNames
 import XMonad.Hooks.EwmhDesktops
 import XMonad.Hooks.ManageDocks
 import XMonad.Hooks.Minimize
-import XMonad.Actions.Minimize
 import XMonad.Layout.BinarySpacePartition
 import XMonad.Layout.BorderResize
-import XMonad.Actions.MouseResize
+import XMonad.Layout.Fullscreen (fullscreenSupport)
 import XMonad.Layout.LayoutCombinators ((|||))
 import qualified XMonad.Layout.LayoutCombinators as LC
 import XMonad.Layout.Minimize
-import XMonad.Actions.GridSelect
-import XMonad.Actions.CycleWS
 import XMonad.Layout.MosaicAlt
 import XMonad.Layout.NoBorders
-import XMonad.Layout.Fullscreen (fullscreenSupport)
 import XMonad.Layout.Renamed
 import XMonad.Prompt
 import XMonad.Prompt.Shell
 import XMonad.Prompt.XMonad
+import qualified XMonad.StackSet as W
+import qualified XMonad.Util.Hacks as Hacks
+import XMonad.Util.Paste
 import XMonad.Util.Replace
 import XMonad.Util.Run
-import XMonad.Util.Paste
 
 import XMonad.Config.Prime.Monadic hiding ((|||))
 
-import Local.Hue
-import Local.Util
 import Local.DockWindows
+import Local.Hue
 import Local.Popup
+import Local.Util
 import Local.Xmobar
 
 import Local.FixEWMH
@@ -102,11 +104,15 @@ main = do
       setWindowBorderWidth d w 0
       raiseWindow d w
     return (All True)
+  handleEventHook =+ Hacks.windowedFullscreenFixEventHook
+  handleEventHook =+ Hacks.trayerAboveXmobarEventHook
 
   apply $ exc . ewmh
   startupHook =+ fixSupportedAtoms
   apply $ exc . docks
-  apply $ exc . fullscreenSupport
+  -- apply $ exc . fullscreenSupport
+
+  apply $ exc . Hacks.javaHack
 
   -- startupHook =+ setWMName "LG3D"
 
@@ -353,9 +359,9 @@ main = do
            False
 
   "M1-r" ~~ do
-    name <- getWorkspaceNames <*> gets (W.currentTag . windowset)
+    name <- getWorkspaceNames' <*> gets (W.currentTag . windowset)
     renameWorkspace myXPConfig{ fgColor="brown"
-                              , defaultText = drop 1 . dropWhile (/=':') $ name}
+                              , defaultText = drop 1 . dropWhile (/=':') $ fromMaybe "" name}
 
   "M-<Tab>" ~~ nextScreen
   "M-S-<Tab>" ~~ shiftNextScreen
