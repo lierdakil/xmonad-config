@@ -29,7 +29,6 @@ import XMonad.Hooks.ManageDocks
 import XMonad.Hooks.Minimize
 import XMonad.Layout.BinarySpacePartition
 import XMonad.Layout.BorderResize
-import XMonad.Layout.Fullscreen (fullscreenSupport)
 import XMonad.Layout.LayoutCombinators ((|||))
 import qualified XMonad.Layout.LayoutCombinators as LC
 import XMonad.Layout.Minimize
@@ -96,7 +95,7 @@ main = do
       , isClass ["jackmix"]  --> doShift hiddenWorkspaceTag
       ]
 
-  handleEventHook =+ fullscreenEventHook
+  apply $ exc . ewmhFullscreen
   handleEventHook =+ minimizeEventHook
   handleEventHook =+ \ev -> do
     let w = ev_window ev

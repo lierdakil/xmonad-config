@@ -5,4 +5,6 @@ package xmonad
   ghc-options: -j +RTS -A64m -RTS
 package xmonad-contrib
   ghc-options: -j +RTS -A64m -RTS
+package xmonad-config
+  ghc-options: -j -Werror -Wall +RTS -A64m -RTS
 optimization: 1
