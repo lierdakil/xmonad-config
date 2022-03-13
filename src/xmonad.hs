@@ -95,7 +95,8 @@ main = do
       , isClass ["jackmix"]  --> doShift hiddenWorkspaceTag
       ]
 
-  apply $ exc . ewmhFullscreen
+  -- note: no fullscreen support; mostly to facilitate capturing chrome windows.
+  -- if you need it, the best option is XMonad.Layout.Fullscreen.fullscreenSupport
   handleEventHook =+ minimizeEventHook
   handleEventHook =+ \ev -> do
     let w = ev_window ev
@@ -109,7 +110,6 @@ main = do
   apply $ exc . ewmh
   startupHook =+ fixSupportedAtoms
   apply $ exc . docks
-  -- apply $ exc . fullscreenSupport
 
   apply $ exc . Hacks.javaHack
 
