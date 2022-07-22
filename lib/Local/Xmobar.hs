@@ -20,8 +20,8 @@ xmobarConfig view = do
     flip fmap (asks $ XM.workspaces . XM.config) $
       \wss ->
         ("next-layout",sendMessage NextLayout):
-        ("next-ws", doTo Next NonEmptyWS getSortByIndex' (windows . view)):
-        ("prev-ws", doTo Prev NonEmptyWS getSortByIndex' (windows . view)):
+        ("next-ws", doTo Next (Not emptyWS) getSortByIndex' (windows . view)):
+        ("prev-ws", doTo Prev (Not emptyWS) getSortByIndex' (windows . view)):
         ("show-title", withNamedWindow $ popup . show):
         [("view" ++ i, windows $ view i) | i <- wss]
   logHook =+ do
