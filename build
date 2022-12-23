@@ -1,13 +1,11 @@
 #!/bin/bash
 
+mklink dist-newstyle
 hpack
-cabal v2-build .
-config="$(cabal v2-exec which xmonad-config)"
-[ -n "$1" ] && cp -f "$config" "$1"
+installdir="$HOME/.local/bin/"
+cabal v2-install . --overwrite-policy=always --install-method=copy --installdir="$installdir"
+[ -n "$1" ] && cp -f $installdir/xmonad-config "$1"
 if [ -z "$1" ]; then
   cabal v2-install xmonad --overwrite-policy=always --install-method=copy
   cabal v2-install xmobar --overwrite-policy=always --install-method=copy
-  ctl="$(cabal v2-exec which xmonadctl)"
-  ctl="$(cabal v2-exec which xmonadctl)"
-  cp -f "$ctl" $HOME/.local/bin/
 fi
