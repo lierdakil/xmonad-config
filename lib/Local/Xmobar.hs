@@ -4,7 +4,6 @@ import XMonad.Hooks.DynamicLog
 
 import XMonad.Config.Prime.Monadic
 
-
 import XMonad.Actions.WorkspaceNames
 import Local.Util
 import Local.Popup
@@ -39,8 +38,13 @@ myPP sid = xmobarPP {
     , ppSort = fmap (. filterHidden) (ppSort xmobarPP)
     , ppWsSep    = ""
     , ppSep      = ""
-    , ppTitle    = xmobarColor "#999999" "#324c80" . pad . showTitle . xmobarEscape
+    , ppTitle    = xmobarColor "#999999" "#324c80" . pad . showTitle . xmobarEscape . ellipsize 50
 }
+
+ellipsize :: Int -> String -> String
+ellipsize n x = case splitAt n x of
+  (y, []) -> y
+  (y, _) -> take (n-3) y <> "..."
 
 xmobarEscape :: String -> String
 xmobarEscape [] = []
