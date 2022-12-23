@@ -33,7 +33,7 @@ popupConfig = do
   handleEventHook =+ handleTimerEvent
   apply $ exc . withUrgencyHookC (MyUrgencyHook popup) muhConfig
   where
-    muhConfig = urgencyConfig {
+    muhConfig = def {
         suppressWhen = Focused
       , remindWhen = Repeatedly 5 5
       }
