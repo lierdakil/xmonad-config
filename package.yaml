@@ -10,6 +10,8 @@ github: lierdakil/xmonad-config
 dependencies:
 - base
 ghc-options: -Wall
+data-files:
+  xmobar/icons/*.xbm
 library:
   source-dirs: lib
   dependencies:
@@ -39,3 +41,10 @@ executables:
     source-dirs: src
     dependencies:
     - X11
+  xmobar:
+    ghc-options: -threaded -rtsopts -with-rtsopts=-N
+    main: xmobar.hs
+    source-dirs: xmobar
+    dependencies:
+    - xmobar
+    - filepath

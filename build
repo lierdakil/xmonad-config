@@ -6,6 +6,5 @@ installdir="$HOME/.local/bin/"
 cabal v2-install . --overwrite-policy=always --install-method=copy --installdir="$installdir"
 [ -n "$1" ] && cp -f $installdir/xmonad-config "$1"
 if [ -z "$1" ]; then
-  cabal v2-install xmonad --overwrite-policy=always --install-method=copy
-  cabal v2-install xmobar --overwrite-policy=always --install-method=copy
+  cabal v2-install xmonad --overwrite-policy=always --install-method=copy --installdir="$installdir"
 fi
