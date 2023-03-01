@@ -1,6 +1,5 @@
 #!/bin/bash
 
-mklink dist-newstyle
 hpack
 installdir="$HOME/.local/bin/"
 cabal v2-install . -j --overwrite-policy=always --install-method=copy --installdir="$installdir"
