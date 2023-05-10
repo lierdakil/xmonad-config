@@ -1,36 +1,34 @@
-{-# LANGUAGE LambdaCase       #-}
-
 module Main where
 
 import Control.Arrow ((>>>))
 import Control.Concurrent
 import Control.Exception
 import Control.Monad
-import qualified Data.Map as M
+import Data.Map qualified as M
 import Data.Maybe (fromMaybe)
 import Data.Monoid (All(..))
 import System.Clock
 import System.Exit
 import System.IO
 
-import qualified XMonad as XM
+import XMonad qualified as XM
 import XMonad.Actions.CycleWS
 import XMonad.Actions.FindEmptyWorkspace
-import qualified XMonad.Actions.FlexibleManipulate as Flex
+import XMonad.Actions.FlexibleManipulate qualified as Flex
 import XMonad.Actions.GridSelect
 import XMonad.Actions.Minimize
 import XMonad.Actions.MouseGestures hiding (mouseGesture)
 import XMonad.Actions.MouseResize
 import XMonad.Actions.Navigation2D
-import qualified XMonad.Actions.OnScreen as WW
+import XMonad.Actions.OnScreen qualified as WW
 import XMonad.Actions.WorkspaceNames
 import XMonad.Hooks.EwmhDesktops
 import XMonad.Hooks.ManageDocks
 import XMonad.Hooks.Minimize
 import XMonad.Layout.BinarySpacePartition
 import XMonad.Layout.BorderResize
+import XMonad.Layout.LayoutCombinators qualified as LC
 import XMonad.Layout.LayoutCombinators ((|||))
-import qualified XMonad.Layout.LayoutCombinators as LC
 import XMonad.Layout.Minimize
 import XMonad.Layout.MosaicAlt
 import XMonad.Layout.NoBorders
@@ -38,8 +36,8 @@ import XMonad.Layout.Renamed
 import XMonad.Prompt
 import XMonad.Prompt.Shell
 import XMonad.Prompt.XMonad
-import qualified XMonad.StackSet as W
-import qualified XMonad.Util.Hacks as Hacks
+import XMonad.StackSet qualified as W
+import XMonad.Util.Hacks qualified as Hacks
 import XMonad.Util.Paste
 import XMonad.Util.Replace
 import XMonad.Util.Run
@@ -288,11 +286,11 @@ main = do
   -- utility bindings ported from xbindkeysrc
   -- mod3Mask = R_CTRL, see xmodmap
   "<XF86Sleep>"              ~~ spawn "loginctl lock-session"
-  "<XF86AudioLowerVolume>"   ~~ spawn "pavol -2000"
-  "<XF86AudioRaiseVolume>"   ~~ spawn "pavol +2000"
+  "<XF86AudioLowerVolume>"   ~~ spawn "pactl set-sink-volume @DEFAULT_SINK@ -2000"
+  "<XF86AudioRaiseVolume>"   ~~ spawn "pactl set-sink-volume @DEFAULT_SINK@ +2000"
   "<Pause>"                  ~~ spawn "apod.ts"
-  "M-<XF86AudioMute>"        ~~ spawn "pamoveallto"
-  "<XF86AudioMute>"          ~~ spawn "pavol mute"
+  -- "M-<XF86AudioMute>"        ~~ spawn "pamoveallto"
+  "<XF86AudioMute>"          ~~ spawn "pactl set-sink-mute @DEFAULT_SINK@ toggle"
   "<XF86AudioNext>"          ~~ spawn "mpc next"
   "<XF86AudioPrev>"          ~~ spawn "mpc prev"
   "<XF86AudioStop>"          ~~ spawn "mpc stop"
@@ -300,7 +298,7 @@ main = do
   "M1-<F3>"                  ~~ spawn "xkill"
   "M3-r"                     ~~ spawn "mklink.sh"
   "M3-t"                     ~~ spawn "shlink.sh"
-  "M3-s"                     ~~ spawn "screencast"
+  -- "M3-s"                     ~~ spawn "screencast"
   "M3-l"                     ~~ spawn "mlock"
   "M3-<F11>"                 ~~ lightsPower "1" False
   "M3-<F12>"                 ~~ lightsPower "1" True
@@ -308,8 +306,8 @@ main = do
   "M3-S-<F12>"               ~~ lightsPower "2" True
   "M3-/"                     ~~ spawn "hexchat -e -c 'gui show'"
   "M3-S-/"                   ~~ spawn "hexchat -e -c 'gui hide'"
-  "M3-<F6>"                  ~~ spawn "toggle-touchpad"
-  "<Print>"                  ~~ spawn "screenshot"
+  -- "M3-<F6>"                  ~~ spawn "toggle-touchpad"
+  "<Print>"                  ~~ spawn "import +repage png:- | xclip -selection clipboard -target image/png -i"
   "M3-S-<Backspace>"         ~~
     runProcessWithInput "pidof" ["deadd-notification-center"] [] >>=
     (lines >>> ("-USR1":) >>> safeSpawn "kill")

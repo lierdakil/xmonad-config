@@ -50,6 +50,12 @@ library
       Paths_xmonad_config
   hs-source-dirs:
       lib
+  default-extensions:
+      LambdaCase
+      GHC2021
+      OverloadedStrings
+      RecordWildCards
+      DerivingStrategies
   ghc-options: -Wall
   build-depends:
       aeson
@@ -70,10 +76,19 @@ executable xmobar
       Paths_xmonad_config
   hs-source-dirs:
       xmobar
+  default-extensions:
+      LambdaCase
+      GHC2021
+      OverloadedStrings
+      RecordWildCards
+      DerivingStrategies
   ghc-options: -Wall -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       base
+    , containers
     , filepath
+    , process
+    , text
     , xmobar
   default-language: Haskell2010
 
@@ -83,6 +98,12 @@ executable xmonad-config
       Paths_xmonad_config
   hs-source-dirs:
       src
+  default-extensions:
+      LambdaCase
+      GHC2021
+      OverloadedStrings
+      RecordWildCards
+      DerivingStrategies
   ghc-options: -Wall -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       base
@@ -99,6 +120,12 @@ executable xmonadctl
       Paths_xmonad_config
   hs-source-dirs:
       src
+  default-extensions:
+      LambdaCase
+      GHC2021
+      OverloadedStrings
+      RecordWildCards
+      DerivingStrategies
   ghc-options: -Wall -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       X11

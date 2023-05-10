@@ -9,6 +9,12 @@ category: System
 github: lierdakil/xmonad-config
 dependencies:
 - base
+default-extensions:
+  - LambdaCase
+  - GHC2021
+  - OverloadedStrings
+  - RecordWildCards
+  - DerivingStrategies
 ghc-options: -Wall
 data-files:
   xmobar/icons/*.xbm
@@ -48,3 +54,6 @@ executables:
     dependencies:
     - xmobar
     - filepath
+    - text
+    - process
+    - containers
