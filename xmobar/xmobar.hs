@@ -75,14 +75,16 @@ data PaMute = PaMute
 
 instance Exec PaMute where
   alias _ = "mute"
-  rate _ = 1
+  rate _ = 10
   run _ = do
     defaultEnv <- getEnvironment
     let env = Just $ ("LC_ALL", "C") : defaultEnv
     isMute <- T.pack <$> readCreateProcess (proc "pactl" ["get-sink-mute", "@DEFAULT_SINK@"]){env} ""
+    volume <- T.pack <$> readCreateProcess (proc "pactl" ["get-sink-volume", "@DEFAULT_SINK@"]){env} ""
+    let vol = fmap (T.justifyLeft 3 ' ' . T.strip) . listToMaybe $ drop 1 $ T.splitOn "/" volume
     pure $ case fmap T.strip $ T.stripPrefix "Mute:" isMute of
-      Just "yes" -> "M"
-      _ -> " "
+      Just "yes" -> " M "
+      _ -> maybe "   " T.unpack vol
 
 config :: FilePath -> Config
 config datadir = defaultConfig
