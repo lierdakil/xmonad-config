@@ -308,9 +308,9 @@ main = do
   "M3-S-/"                   ~~ spawn "hexchat -e -c 'gui hide'"
   -- "M3-<F6>"                  ~~ spawn "toggle-touchpad"
   "<Print>"                  ~~ spawn "import +repage png:- | xclip -selection clipboard -target image/png -i"
-  "M3-S-<Backspace>"         ~~
-    runProcessWithInput "pidof" ["deadd-notification-center"] [] >>=
-    (lines >>> ("-USR1":) >>> safeSpawn "kill")
+  -- "M3-S-<Backspace>"         ~~
+  --   runProcessWithInput "pidof" ["deadd-notification-center"] [] >>=
+  --   (lines >>> ("-USR1":) >>> safeSpawn "kill")
 
   rawkeys =+ [((mod3Mask, k), lightsBrightness v)
     | (v,k) <- zip (map (floor . (*254)) [0.1,0.2..1 :: Float]) topkeys]
