@@ -1,6 +1,5 @@
 module Main where
 
-import Control.Arrow ((>>>))
 import Control.Concurrent
 import Control.Exception
 import Control.Monad
@@ -308,6 +307,7 @@ main = do
   "M3-S-/"                   ~~ spawn "hexchat -e -c 'gui hide'"
   -- "M3-<F6>"                  ~~ spawn "toggle-touchpad"
   "<Print>"                  ~~ spawn "import +repage png:- | xclip -selection clipboard -target image/png -i"
+  "M3-<Space>"               ~~ spawn "dunstctl history-pop"
   -- "M3-S-<Backspace>"         ~~
   --   runProcessWithInput "pidof" ["deadd-notification-center"] [] >>=
   --   (lines >>> ("-USR1":) >>> safeSpawn "kill")
