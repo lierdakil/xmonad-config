@@ -23,6 +23,7 @@ import XMonad.Actions.OnScreen qualified as WW
 import XMonad.Actions.WorkspaceNames
 import XMonad.Hooks.EwmhDesktops
 import XMonad.Hooks.ManageDocks
+import XMonad.Hooks.ManageHelpers
 import XMonad.Hooks.Minimize
 import XMonad.Layout.BinarySpacePartition
 import XMonad.Layout.BorderResize
@@ -91,6 +92,12 @@ main = do
       , isResource ignored --> doIgnore
       , isClass ["jackmix"]  --> doShift hiddenWorkspaceTag
       ]
+  -- this logHook raises unmanaged notification windows; this is required for
+  -- e.g. wired, because its windows don't self-raise.
+  logHook =+ withDisplay $ \dpy -> do
+    let isNotification = isInProperty "_NET_WM_WINDOW_TYPE" "_NET_WM_WINDOW_TYPE_NOTIFICATION"
+    (_, _, wins) <- io . queryTree dpy =<< asks theRoot
+    mapM_ (io . raiseWindow dpy) =<< filterM (runQuery isNotification) wins
 
   -- note: no fullscreen support; mostly to facilitate capturing chrome windows.
   -- if you need it, the best option is XMonad.Layout.Fullscreen.fullscreenSupport
