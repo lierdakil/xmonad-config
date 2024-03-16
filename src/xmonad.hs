@@ -169,7 +169,6 @@ main = do
     myXPConfig = amberXPConfig{ font="xft:Fira Mono:pixelsize=24"
                               , position=Top
                               , height=32}
-    myXPConfigTerm = myXPConfig {fgColor="green"}
   "M1-0" ~~ viewEmptyWorkspace
   "M5-0" ~~ viewEmptyWorkspace
   "M1-S-0" ~~ tagToEmptyWorkspace
@@ -183,28 +182,19 @@ main = do
   "M5-<Return>" ~~ spawn =<< asks (XM.terminal . XM.config)
 
   -- launch program
-  "M-p" ~~ shellPrompt myXPConfig
+  "M-p" ~~ safeSpawn "rofi" ["-show", "run"]
 
   -- launch in terminal
-  "M-S-p" ~~ do
-    term <- asks (XM.terminal . XM.config)
-    prompt (term ++ " -e") myXPConfigTerm
+  "M-S-p" ~~ shellPrompt myXPConfig
 
   "M1-S--" ~~ goToSelected def
-  "M5--" ~~ goToSelected def
+  "M5--" ~~ safeSpawn "rofi" ["-show", "window"]
   "M1-S-=" ~~ bringSelected def
   "M5-'" ~~ bringSelected def
 
-  "M3-p" ~~ spawnSelected def
-                              [ "thunar"
-                              , "google-chrome-stable"
-                              , "seahorse"
-                              , "urxvt"
-                              , "atom"
-                              , "krita"
-                              ]
+  "M3-p" ~~ safeSpawn "rofi" ["-show", "combi"]
 
-  "M3-S-p" ~~ safeSpawn "dmenu-xdg" ["-l", "15"]
+  "M3-S-p" ~~ safeSpawn "rofi" ["-show", "drun"]
 
   -- close focused window
   "M1-S-c" ~~ kill
