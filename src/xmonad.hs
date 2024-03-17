@@ -182,10 +182,7 @@ main = do
   "M5-<Return>" ~~ spawn =<< asks (XM.terminal . XM.config)
 
   -- launch program
-  "M-p" ~~ safeSpawn "rofi" ["-show", "run"]
-
-  -- launch in terminal
-  "M-S-p" ~~ shellPrompt myXPConfig
+  "M-p" ~~ shellPrompt myXPConfig
 
   "M1-S--" ~~ goToSelected def
   "M5--" ~~ safeSpawn "rofi" ["-show", "window"]
