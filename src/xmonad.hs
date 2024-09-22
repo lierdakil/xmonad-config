@@ -71,7 +71,6 @@ main = do
   resetLayout $ emptyBSP ||| Full
   modifyLayout $ Layout . renamed [CutWordsLeft 1] . minimize . mouseResize . borderResize . smartBorders . avoidStruts
   let
-    floats = []
     ignored =
       [ "desktop_window"
       , "kdesktop"
@@ -81,15 +80,13 @@ main = do
       ]
   manageHook =+
     composeAll
-      [ isClass floats     --> doFloat
-      , isClass ignored    --> doIgnore
+      [ isClass ignored    --> doIgnore
       , isResource ignored --> doIgnore
       , isClass ["jackmix"]  --> doShift hiddenWorkspaceTag
       ]
   -- this logHook raises unmanaged notification windows; this is required for
   -- e.g. wired, because its windows don't self-raise.
   logHook =+ withDisplay $ \dpy -> do
-    let isNotification = isInProperty "_NET_WM_WINDOW_TYPE" "_NET_WM_WINDOW_TYPE_NOTIFICATION"
     (_, _, wins) <- io . queryTree dpy =<< asks theRoot
     mapM_ (io . raiseWindow dpy) =<< filterM (runQuery isNotification) wins
 
