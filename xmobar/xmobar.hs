@@ -40,10 +40,10 @@ parseXInput :: T.Text -> XInputData
 parseXInput = foldr go defXInputData . map prepare . T.lines where
   defXInputData = XInputData False Nothing
   prepare = join bimap T.strip . second (T.drop 1) . T.breakOn ":"
-  go (k, v) acc = case k of
-    "Evdev Wheel Emulation (318)" ->
+  go (k, v) acc = case T.strip . T.takeWhile (/= '(') $ k of
+    "Evdev Wheel Emulation" ->
       acc{xidEvdevWheelEmulation = parseBool v}
-    "Evdev Drag Lock Buttons (323)" ->
+    "Evdev Drag Lock Buttons" ->
       acc{xidEvdevDragLockButtons = parseMbIntList v}
     _ -> acc
   parseBool = \case

@@ -27,10 +27,8 @@ import XMonad.Hooks.ManageHelpers
 import XMonad.Hooks.Minimize
 import XMonad.Layout.BinarySpacePartition
 import XMonad.Layout.BorderResize
-import XMonad.Layout.LayoutCombinators qualified as LC
 import XMonad.Layout.LayoutCombinators ((|||))
 import XMonad.Layout.Minimize
-import XMonad.Layout.MosaicAlt
 import XMonad.Layout.NoBorders
 import XMonad.Layout.Renamed
 import XMonad.Prompt
@@ -129,7 +127,7 @@ main = do
   -- because of "weird" xkb layout.
   let topkeys = [0x21, 0x40, 0x23, 0x24, 0x25, 0x5e, 0x26, 0x2a, 0x28, 0x29]
 
-  forM_ (zip [1..(9 :: Int)] $ zip3 topkeys "qwertyuiop" "asdfghjkl") $ \(i,(c,j,k)) -> do
+  forM_ (zip [1..(9 :: Int)] $ zip3 topkeys "qwertyuio" "asdfghjkl") $ \(i,(c,j,k)) -> do
     let si = show i
     workspaces =+ [si]
     "M1-" <> si ~~ windows (view si)
@@ -154,7 +152,6 @@ main = do
   -- M3 = RCTL
   hueToken <- io $ try (read <$> readFile ".hueToken" :: IO String)
   let
-    layout' f = withWindowSet $ f . description . W.layout . W.workspace . W.current
     lightsPower g = lightsCommand g . ParameterOn
     lightsBrightness = lightsCommand lightsGroup . ParameterBrightness
     lightsCt = lightsCommand lightsGroup . ParameterColor
@@ -170,13 +167,9 @@ main = do
                               , position=Top
                               , height=32}
   "M1-0" ~~ viewEmptyWorkspace
-  "M5-0" ~~ viewEmptyWorkspace
+  "M5-;" ~~ viewEmptyWorkspace
   "M1-S-0" ~~ tagToEmptyWorkspace
-  "M5-;" ~~ tagToEmptyWorkspace
-
-  -- [((controlMask .|. mod1Mask, k), spawn $ "chvt "++show (i::Int))
-  --     | (i,k) <- zip [1..12] [xK_F1..xK_F12] ]
-  -- ++
+  "M5-p" ~~ tagToEmptyWorkspace
 
   "M-S-<Return>" ~~ spawn =<< asks (XM.terminal . XM.config)
   "M5-<Return>" ~~ spawn =<< asks (XM.terminal . XM.config)
@@ -185,9 +178,9 @@ main = do
   "M-p" ~~ shellPrompt myXPConfig
 
   "M1-S--" ~~ goToSelected def
-  "M5--" ~~ safeSpawn "rofi" ["-show", "window"]
+  "M5-'" ~~ safeSpawn "rofi" ["-show", "window"]
   "M1-S-=" ~~ bringSelected def
-  "M5-'" ~~ bringSelected def
+  "M5--" ~~ bringSelected def
 
   "M3-p" ~~ safeSpawn "rofi" ["-show", "combi"]
 
@@ -232,27 +225,6 @@ main = do
   "M-t" ~~ withFocused (windows . W.sink)
   "M-S-t" ~~ withFocused XM.float
 
-  -- layout-dependent keys
-  -- Shrink the master area
-  "M-h" ~~ layout' $
-    \case "MosaicAlt" -> withFocused (sendMessage . shrinkWindowAlt)
-          _ -> sendMessage Shrink
-
-  -- Expand the master area
-  "M-l" ~~ layout' $
-    \case "MosaicAlt" -> withFocused (sendMessage . expandWindowAlt)
-          _ -> sendMessage Expand
-
-  -- Increment the number of windows in the master area
-  "M-." ~~ layout' $
-    \case "MosaicAlt" -> withFocused (sendMessage . tallWindowAlt)
-          _ -> sendMessage (IncMasterN 1)
-
-  -- Decrement the number of windows in the master area
-  "M-," ~~ layout' $
-    \case "MosaicAlt" -> withFocused (sendMessage . tallWindowAlt)
-          _ -> sendMessage (IncMasterN (-1))
-
   -- Show dmenu with some XMonad actions
   "M-o" ~~ xmonadPrompt myXPConfig
 
@@ -261,20 +233,9 @@ main = do
 
   -- Quit xmonad
   "M-S-q" ~~ io exitSuccess
-  "M-S-f" ~~ restart "/home/livid/bin/switchWM" True
 
   -- Restart xmonad
   "M-q" ~~ spawn "xmonad --restart"
-
-  --mosaic
-  --, ((modm, xK_a), sendMessage Taller)
-  --, ((modm, xK_z), sendMessage Wider)
-  -- !!!
-  "M-S-<Space>" ~~ layout' $
-    \case "MosaicAlt" -> sendMessage resetAlt
-          d -> XM.asks XM.config
-               >>=  setLayout . XM.layoutHook
-               >> sendMessage (LC.JumpToLayout d)
 
   -- utility bindings ported from xbindkeysrc
   -- mod3Mask = R_CTRL, see xmodmap
@@ -282,7 +243,6 @@ main = do
   "<XF86AudioLowerVolume>"   ~~ spawn "pactl set-sink-volume @DEFAULT_SINK@ -2000"
   "<XF86AudioRaiseVolume>"   ~~ spawn "pactl set-sink-volume @DEFAULT_SINK@ +2000"
   "<Pause>"                  ~~ spawn "apod.ts"
-  -- "M-<XF86AudioMute>"        ~~ spawn "pamoveallto"
   "<XF86AudioMute>"          ~~ spawn "pactl set-sink-mute @DEFAULT_SINK@ toggle"
   "<XF86AudioNext>"          ~~ spawn "mpc next"
   "<XF86AudioPrev>"          ~~ spawn "mpc prev"
@@ -290,21 +250,11 @@ main = do
   "<XF86AudioPlay>"          ~~ spawn "mpc toggle"
   "M1-<F3>"                  ~~ spawn "xkill"
   "M3-r"                     ~~ spawn "mklink.sh"
-  "M3-t"                     ~~ spawn "shlink.sh"
-  -- "M3-s"                     ~~ spawn "screencast"
-  "M3-l"                     ~~ spawn "mlock"
   "M3-<F11>"                 ~~ lightsPower "1" False
   "M3-<F12>"                 ~~ lightsPower "1" True
   "M3-S-<F11>"               ~~ lightsPower "2" False
   "M3-S-<F12>"               ~~ lightsPower "2" True
-  "M3-/"                     ~~ spawn "hexchat -e -c 'gui show'"
-  "M3-S-/"                   ~~ spawn "hexchat -e -c 'gui hide'"
-  -- "M3-<F6>"                  ~~ spawn "toggle-touchpad"
-  "<Print>"                  ~~ spawn "import +repage png:- | xclip -selection clipboard -target image/png -i"
-  "M3-<Space>"               ~~ spawn "dunstctl history-pop"
-  -- "M3-S-<Backspace>"         ~~
-  --   runProcessWithInput "pidof" ["deadd-notification-center"] [] >>=
-  --   (lines >>> ("-USR1":) >>> safeSpawn "kill")
+  "M3-<Space>"               ~~ spawn "wired -s 20" -- show notification history
 
   rawkeys =+ [((mod3Mask, k), lightsBrightness v)
     | (v,k) <- zip (map (floor . (*254)) [0.1,0.2..1 :: Float]) topkeys]
@@ -315,29 +265,25 @@ main = do
   "<XF86Tools>"              ~~ spawn "toggle-second-monitor"
   "<XF86Launch5>"            ~~ swapNextScreen
   "<XF86Launch6>"            ~~ spawn "toggle-primary-monitor"
-  "<XF86Launch7>"            ~~ spawn "systemctl --user restart kmonad"
+  "<XF86Launch7>"            ~~ spawn "systemctl --user restart kanata"
   "<XF86Launch8>"            ~~ spawn "toggle-third-monitor"
-  "M-<F1>"                   ~~ spawn "edit-kin-map"
-  -- "<XF86Launch8>"            ~~ spawn "pamoveallto"
 
-  "M3-<KP_Left>"      ~~ sendMessage (ExpandTowards L)
-  "M3-<KP_Right>"     ~~ sendMessage (ExpandTowards R)
-  "M3-<KP_Up>"        ~~ sendMessage (ExpandTowards U)
-  "M3-<KP_Down>"      ~~ sendMessage (ExpandTowards D)
-  "M3-<KP_Subtract>"  ~~ sendMessage RotateL
-  "M3-<KP_Add>"       ~~ sendMessage RotateR
-  "M3-<KP_Home>"      ~~ mapM_ (sendMessage . ExpandTowards) [L, U]
-  "M3-<KP_Page_Up>"   ~~ mapM_ (sendMessage . ExpandTowards) [R, U]
-  "M3-<KP_Page_Down>" ~~ mapM_ (sendMessage . ExpandTowards) [R, D]
-  "M3-<KP_End>"       ~~ mapM_ (sendMessage . ExpandTowards) [L, D]
-  "M3-<KP_Begin>"     ~~ sendMessage Rotate
-  "M3-k"              ~~ sendMessage Rotate
-  "M3-<KP_Delete>"    ~~ sendMessage FocusParent
-  "M3-<KP_Insert>"    ~~ sendMessage Equalize
-  "M3-<KP_Enter>"     ~~ sendMessage Balance
-  -- "M-s"            ~~ sendMessage Swap
-  -- "M-C-n"         ~~ sendMessage SelectNode
-  -- "M-S-n"          ~~ sendMessage MoveNode
+  -- I don't use these often, except rotate
+  "M3-j"      ~~ sendMessage (ExpandTowards L)
+  "M3-l"     ~~ sendMessage (ExpandTowards R)
+  "M3-i"        ~~ sendMessage (ExpandTowards U)
+  "M3-,"      ~~ sendMessage (ExpandTowards D)
+  "M3-u"      ~~ mapM_ (sendMessage . ExpandTowards) [L, U]
+  "M3-o"   ~~ mapM_ (sendMessage . ExpandTowards) [R, U]
+  "M3-." ~~ mapM_ (sendMessage . ExpandTowards) [R, D]
+  "M3-n"       ~~ mapM_ (sendMessage . ExpandTowards) [L, D]
+  "M3-k"     ~~ sendMessage Rotate
+  -- these I *should* use more often
+  "M3-;"     ~~ sendMessage Rotate
+  "M3-["    ~~ sendMessage FocusParent
+  "M3-/"    ~~ sendMessage Equalize
+  "M3-]"     ~~ sendMessage Balance
+  --
   "M--"      ~~ withFocused minimizeWindow
   "M-S--"    ~~ withLastMinimized maximizeWindow
 
