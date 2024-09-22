@@ -71,11 +71,7 @@ main = do
   resetLayout $ emptyBSP ||| Full
   modifyLayout $ Layout . renamed [CutWordsLeft 1] . minimize . mouseResize . borderResize . smartBorders . avoidStruts
   let
-    floats =
-      [ "Gajim"
-      , "Screengrab"
-      , "Display"
-      ]
+    floats = []
     ignored =
       [ "desktop_window"
       , "kdesktop"
@@ -305,19 +301,22 @@ main = do
     gestures = M.fromList [
           (Click, run "toggle-scroll-emulation")
         , (Hold, run "toggle-drag-lock")
-        , (Gesture [D], windows . W.sink)
-        , (Gesture [R], (>> windows W.swapDown) . focus)
-        , (Gesture [L], (>> windows W.swapUp) . focus)
+        , (Gesture [L, U], XM.float)
+        , (Gesture [R, D], windows . W.sink)
+        , (Gesture [U], (>> windowSwap U True) . focus)
+        , (Gesture [D], (>> windowSwap D True) . focus)
+        , (Gesture [R], (>> windowSwap R True) . focus)
+        , (Gesture [L], (>> windowSwap L True) . focus)
         , (Gesture [L, D], (>> windows W.swapMaster) . focus)
         , (Gesture [D, R], (>> kill) . focus)
       ]
     run = return . spawn
 
   mouseBindings =+
-        [ ((mod3Mask, 1), \w -> focus w >> asks display >>= io . flip raiseWindow w >> Flex.mouseWindow Flex.discrete w)
+        [ ((mod4Mask, 1), \w -> focus w >> asks display >>= io . flip raiseWindow w >> Flex.mouseWindow Flex.discrete w)
         , ((0, 12), mouseGesture gestures)
-        , ((mod3Mask, 5), modifyWindowOpacity 0x1fffffff)
-        , ((mod3Mask, 4), modifyWindowOpacity (-0x1fffffff))
+        , ((mod4Mask, 5), modifyWindowOpacity 0x1fffffff)
+        , ((mod4Mask, 4), modifyWindowOpacity (-0x1fffffff))
         ]
 
 data ClickOrGest = Click | Hold | Gesture [Direction2D]
