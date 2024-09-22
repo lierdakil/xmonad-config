@@ -198,16 +198,14 @@ main = do
   "M-n" ~~ refresh
 
   -- Move focus to the next window
-  "M1-<Tab>" ~~ windows W.focusDown
-
-  -- Move focus to the next window
-  "M-j" ~~ windows W.focusDown
-  "M5-," ~~ windows W.focusDown
+  "M-j" ~~ windows W.focusUp
+  "M5-," ~~ windows W.focusUp
+  "M1-S-<Tab>" ~~ windows W.focusUp
 
   -- Move focus to the previous window
-  "M-k" ~~ windows W.focusUp
-  "M5-." ~~ windows W.focusUp
-  "M1-S-<Tab>" ~~ windows W.focusUp
+  "M-k" ~~ windows W.focusDown
+  "M5-." ~~ windows W.focusDown
+  "M1-<Tab>" ~~ windows W.focusDown
 
   -- Move focus to the master window
   "M-m" ~~ windows W.focusMaster
