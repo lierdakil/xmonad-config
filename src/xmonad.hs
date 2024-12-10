@@ -258,6 +258,7 @@ main = do
   "<XF86Launch6>"            ~~ spawn "toggle-primary-monitor"
   "<XF86Launch7>"            ~~ spawn "systemctl --user restart kanata"
   "<XF86Launch8>"            ~~ spawn "toggle-third-monitor"
+  "<XF86Launch9>"            ~~ spawn "xclip -o | sanskrit-iast -f- | xclip -i -selection clipboard"
 
   -- I don't use these often, except rotate
   "M3-j"      ~~ sendMessage (ExpandTowards L)
