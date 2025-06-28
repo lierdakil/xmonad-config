@@ -1,74 +1,74 @@
 module Main (main) where
 
-import Control.Monad
-import Data.Bifunctor
-import Data.IntMap (IntMap)
-import Data.IntMap qualified as IntMap
 import Data.Maybe
 import Data.Text qualified as T
 import Paths_xmonad_config
 import System.Environment
 import System.FilePath
 import System.Process
-import Text.Read
 import Xmobar
+import Network.Socket (socket, connect, close, Family(AF_UNIX), SocketType(Stream), SockAddr(SockAddrUnix))
+import Network.Socket.ByteString (recv)
+import Data.Int (Int32)
+import Data.Word ( Word16)
+import Data.ByteString (ByteString)
+import Data.ByteString.Lazy qualified as L
+import Data.Binary.Get (Get, runGet, getInt32le, getWord8, getWord16le)
+import Data.Functor ((<&>))
+import Control.Applicative (many)
+import Control.Exception (catch, SomeException)
 
-data MState = MState
+data MState = MState String
   deriving stock (Show, Read)
 
+parseInt32LE :: ByteString -> Int32
+parseInt32LE bs = runGet getInt32le $ L.fromStrict bs
+
+newtype KeyCode = KeyCode Word16
+data KeyState
+  = Released
+  | Locked
+  | WillRelease
+  | Unknown
+  deriving Eq
+
+data MStateData = MStateData
+  { scroll :: Bool
+  , buttons :: [(KeyCode, KeyState)]
+  }
+
+parseMStateData :: Get MStateData
+parseMStateData = MStateData <$> getBool <*> getButtons
+  where
+    getBool = (/= 0) <$> getWord8
+    getButtons = many $ (,)
+      <$> (KeyCode <$> getWord16le)
+      <*> getKeyState
+    getKeyState = getWord8 <&> \case
+      0 -> Released
+      1 -> Locked
+      2 -> WillRelease
+      _ -> Unknown
+
 instance Exec MState where
-    alias MState = "mstate"
-    rate MState = 1
-    run MState = do
-      mouseName <- fromMaybe "Virtual core pointer" <$> lookupEnv "MOUSE"
-      XInputData{..} <- parseXInput . T.pack <$> readProcess "xinput" ["list-props", mouseName] ""
-      secondParam <- case xidEvdevDragLockButtons of
-        Nothing -> pure "0"
-        Just xs -> do
-          XInputState{..} <- parseXInputState . T.pack <$> readProcess "xinput" ["query-state", mouseName] ""
-          if any (\idx -> IntMap.lookup idx xisButtons == Just True) xs
+    alias (MState _) = "mstate"
+    rate (MState _) = 1
+    run (MState path) = ignoreExceptions "xx" $ do
+      sock <- socket AF_UNIX Stream 0
+      connect sock (SockAddrUnix path)
+      size <- fromIntegral . parseInt32LE <$> recv sock 4
+      MStateData{..} <- runGet parseMStateData . L.fromStrict <$> recv sock size
+      close sock
+      secondParam <- case buttons of
+        [] -> pure "0"
+        xs -> do
+          if any (\(_, st) -> st /= Released) xs
             then pure "2"
             else pure "1"
-      pure $ show (fromEnum xidEvdevWheelEmulation) <> secondParam
+      pure $ show (fromEnum scroll) <> secondParam
 
-data XInputData = XInputData
-  { xidEvdevWheelEmulation :: Bool
-  , xidEvdevDragLockButtons :: Maybe [Int]
-  }
-
-parseXInput :: T.Text -> XInputData
-parseXInput = foldr go defXInputData . map prepare . T.lines where
-  defXInputData = XInputData False Nothing
-  prepare = join bimap T.strip . second (T.drop 1) . T.breakOn ":"
-  go (k, v) acc = case T.strip . T.takeWhile (/= '(') $ k of
-    "Evdev Wheel Emulation" ->
-      acc{xidEvdevWheelEmulation = parseBool v}
-    "Evdev Drag Lock Buttons" ->
-      acc{xidEvdevDragLockButtons = parseMbIntList v}
-    _ -> acc
-  parseBool = \case
-    "1" -> True
-    _ -> False
-  parseMbIntList = \case
-    "0" -> Nothing
-    x -> Just . mapMaybe (readMaybe . T.unpack . T.strip) . T.splitOn "," $ x
-
-data XInputState = XInputState
-  { xisButtons :: IntMap Bool
-  }
-
-parseXInputState :: T.Text -> XInputState
-parseXInputState = foldr go defXInputState . map prepare . T.lines where
-  defXInputState = XInputState mempty
-  prepare = join bimap T.strip . second (T.drop 1) . T.breakOn "="
-  go (k, v) acc@XInputState{..}
-    | Just idx <- readMaybe . T.unpack =<< T.stripSuffix "]" =<< T.stripPrefix "button[" k
-    = acc { xisButtons = IntMap.insert idx (parseBtnState v) xisButtons }
-    | otherwise
-    = acc
-  parseBtnState = \case
-    "down" -> True
-    _ -> False
+ignoreExceptions :: a -> IO a -> IO a
+ignoreExceptions def action = action `catch` \(_ :: SomeException) -> pure def
 
 data PaMute = PaMute
   deriving stock (Read, Show)
@@ -114,7 +114,7 @@ config datadir = defaultConfig
       , Run $ TopProc ["-t", "<name1>"] 100
       , Run $ TopMem ["-t", "<name1>"] 100
       , Run $ Kbd []
-      , Run $ MState -- Com "xinput-mouse-state" [] "mstate" 1
+      , Run $ MState "/tmp/tweakpoint.sock"
       , Run $ PaMute
       ]
   , lowerOnStart = True

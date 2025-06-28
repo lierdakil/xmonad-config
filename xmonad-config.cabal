@@ -1,6 +1,6 @@
 cabal-version: 1.12
 
--- This file has been generated from package.yaml by hpack version 0.34.4.
+-- This file has been generated from package.yaml by hpack version 0.37.0.
 --
 -- see: https://github.com/sol/hpack
 
@@ -31,6 +31,7 @@ data-files:
     xmobar/icons/mstate_10.xbm
     xmobar/icons/mstate_11.xbm
     xmobar/icons/mstate_12.xbm
+    xmobar/icons/mstate_xx.xbm
 
 source-repository head
   type: git
@@ -85,8 +86,11 @@ executable xmobar
   ghc-options: -Wall -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       base
+    , binary
+    , bytestring
     , containers
     , filepath
+    , network
     , process
     , text
     , xmobar
