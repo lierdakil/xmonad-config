@@ -6,7 +6,6 @@ import Control.Monad
 import Data.Map qualified as M
 import Data.Maybe (fromMaybe)
 import Data.Monoid (All(..))
-import System.Clock
 import System.Exit
 import System.IO
 
@@ -16,7 +15,7 @@ import XMonad.Actions.FindEmptyWorkspace
 import XMonad.Actions.FlexibleManipulate qualified as Flex
 import XMonad.Actions.GridSelect
 import XMonad.Actions.Minimize
-import XMonad.Actions.MouseGestures hiding (mouseGesture)
+import XMonad.Actions.MouseGestures
 import XMonad.Actions.MouseResize
 import XMonad.Actions.Navigation2D
 import XMonad.Actions.OnScreen qualified as WW
@@ -296,19 +295,16 @@ main = do
   "M-S-<Tab>" ~~ shiftNextScreen
 
   let
-    gestures = M.fromList [
-          (Click, run "toggle-scroll-emulation")
-        , (Hold, run "toggle-drag-lock")
-        , (Gesture [L, U], XM.float)
-        , (Gesture [R, D], windows . W.sink)
-        , (Gesture [U], (>> windowSwap U True) . focus)
-        , (Gesture [D], (>> windowSwap D True) . focus)
-        , (Gesture [R], (>> windowSwap R True) . focus)
-        , (Gesture [L], (>> windowSwap L True) . focus)
-        , (Gesture [L, D], (>> windows W.swapMaster) . focus)
-        , (Gesture [D, R], (>> kill) . focus)
+    gestures = M.fromList
+      [ ([L, U], XM.float)
+      , ([R, D], windows . W.sink)
+      , ([U], (>> windowSwap U True) . focus)
+      , ([D], (>> windowSwap D True) . focus)
+      , ([R], (>> windowSwap R True) . focus)
+      , ([L], (>> windowSwap L True) . focus)
+      , ([L, D], (>> windows W.swapMaster) . focus)
+      , ([D, R], (>> kill) . focus)
       ]
-    run = return . spawn
 
   mouseBindings =+
         [ ((mod4Mask, 1), \w -> focus w >> asks display >>= io . flip raiseWindow w >> Flex.mouseWindow Flex.discrete w)
@@ -316,18 +312,3 @@ main = do
         , ((mod4Mask, 5), modifyWindowOpacity 0x1fffffff)
         , ((mod4Mask, 4), modifyWindowOpacity (-0x1fffffff))
         ]
-
-data ClickOrGest = Click | Hold | Gesture [Direction2D]
-  deriving (Eq, Ord)
-
-mouseGesture :: M.Map ClickOrGest (Window -> X ()) -> Window -> X ()
-mouseGesture tbl win = do
-  (mov, end) <- mkCollect
-  start <- io $ getTime Monotonic
-  mouseGestureH (void . mov) $ end >>= \gest -> do
-    stop <- io $ getTime Monotonic
-    let gest' | null gest
-              = if click then Click else Hold
-              | otherwise = Gesture gest
-        click = (stop - start) <= fromNanoSecs (3 * 10^(8 :: Integer))
-    maybe (return ()) ($ win) $ M.lookup gest' tbl
