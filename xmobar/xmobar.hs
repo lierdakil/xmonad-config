@@ -105,8 +105,9 @@ config datadir = defaultConfig
           , "-l", "lightblue", "-n", "gray90", "-h", "red"]
           10
       , Run $ DiskU
-          [ ("/",                  "<fc=violet>slash: <usedipat> <usedp>%</fc> | ")
-          , ("/home",              "<fc=grey>home: <usedipat> <usedp>%</fc>")
+          [ ("/",                  "| <fc=violet>slash: <usedipat> <usedp>%</fc>")
+          , ("/nix",               "| <fc=teal>nix: <usedipat> <usedp>%</fc>")
+          , ("/home",              "| <fc=grey>home: <usedipat> <usedp>%</fc>")
           ]
           ["--", "--used-icon-pattern", "<icon=hbar_%%.xbm/>"]
           100
@@ -127,7 +128,7 @@ config datadir = defaultConfig
       \}{ <fc=brown>%cpu% %top%</fc> \
       \| %coretemp% \
       \| <fc=darkcyan>%memory% (%swap%) %topmem%</fc> \
-      \| %disku% \
+      \%disku% \
       \| <fc=magenta>%date%</fc> \
       \| %kbd% \
       \| <icon=mstate_%mstate%.xbm/>\
